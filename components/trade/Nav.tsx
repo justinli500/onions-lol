@@ -1,17 +1,22 @@
 import Link from "next/link";
+import { cn } from "@/lib/cn";
 import { ConnectButton } from "@/components/ConnectButton";
 
-export function Nav() {
+const tab = "font-bold text-[13px] px-2 py-1.5 rounded-full transition-colors sm:px-4 sm:py-2";
+const active = "text-paper bg-red";
+const idle = "text-red hover:bg-red/[0.08]";
+
+export function Nav({ active: activeTab = "trade" }: { active?: "trade" | "about" }) {
   return (
-    <nav className="flex items-center justify-between gap-3.5 rounded-full border-2 border-red bg-card pl-[18px] pr-2.5 py-2">
-      <Link href="/" className="flex items-baseline gap-0.5 font-extrabold text-[20px] text-red tracking-tight">
-        <span className="text-[19px] mr-[5px]">🧅</span>
-        <span className="font-script text-[27px] font-normal mr-px">onions</span>
+    <nav className="flex items-center justify-between gap-1.5 rounded-full border-2 border-red bg-card pl-2.5 pr-1.5 py-2 sm:gap-3.5 sm:pl-[18px] sm:pr-2.5">
+      <Link href="/" className="flex items-baseline gap-0.5 font-extrabold text-[15px] text-red tracking-tight sm:text-[20px]">
+        <span className="text-sm mr-0.5 sm:mr-[5px] sm:text-[19px]">🧅</span>
+        <span className="font-script text-[19px] font-normal mr-px sm:text-[27px]">onions</span>
         <span>.lol</span>
       </Link>
       <div className="flex gap-1">
-        <span className="font-bold text-[13px] text-paper bg-red px-4 py-2 rounded-full">Trade</span>
-        <Link href="/" className="font-bold text-[13px] text-red px-4 py-2 rounded-full hover:bg-red/[0.08] transition-colors">About</Link>
+        <Link href="/trade" className={cn(tab, activeTab === "trade" ? active : idle)}>Trade</Link>
+        <Link href="/" className={cn(tab, activeTab === "about" ? active : idle)}>About</Link>
       </div>
       <ConnectButton />
     </nav>

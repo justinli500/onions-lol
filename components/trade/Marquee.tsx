@@ -1,3 +1,5 @@
+import { cn } from "@/lib/cn";
+
 const ITEMS = [
   "VINTAGE",
   "BANNED IN AMERICA",
@@ -6,7 +8,8 @@ const ITEMS = [
   "TRADE THE FORBIDDEN BULB",
 ];
 
-export function Marquee() {
+/** `fullBleed` drops the rounded card framing for an edge-to-edge band. */
+export function Marquee({ fullBleed = false }: { fullBleed?: boolean }) {
   const run = (
     <div className="flex shrink-0">
       {[...ITEMS, ...ITEMS].map((t, i) => (
@@ -20,8 +23,16 @@ export function Marquee() {
     </div>
   );
   return (
-    <div className="my-3.5 overflow-hidden rounded-[14px] border-2 border-red bg-red py-2.5">
-      <div className="flex w-max marquee-track">
+    <div
+      className={cn(
+        "relative h-10 overflow-hidden bg-red",
+        fullBleed
+          ? "border-y-2 border-red"
+          : "my-3.5 rounded-[14px] border-2 border-red",
+      )}
+    >
+      {/* track is absolutely positioned so its max-content width can't blow out the page on mobile */}
+      <div className="absolute inset-y-0 left-0 flex w-max items-center marquee-track">
         {run}
         {run}
       </div>
