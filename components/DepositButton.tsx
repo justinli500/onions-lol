@@ -8,6 +8,8 @@ import type { SignerRequest, SignerResponse } from "@swype-org/deposit";
 import { parseUnits } from "viem";
 import { toast } from "sonner";
 import { USDC_ADDRESS, VAULT_ADDRESS, erc20Abi, vaultAbi } from "@/lib/contracts";
+import { useWalletUsdc } from "@/lib/useExchange";
+import { fmtUSD } from "@/lib/format";
 import { msgOf } from "@/lib/err";
 
 const PRIVY_ENABLED = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -33,9 +35,10 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
   const addr = wallets[0]?.address as `0x${string}` | undefined;
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
+  const { usdc: walletUsdc, refetch: refetchWallet } = useWalletUsdc();
+  const [amount, setAmount] = useState(25);
+  const [busy, setBusy] = useState(false);
 
-  // Signer-function form so we can attach the Privy session token; the hardened
-  // /api/sign-payment binds the signed address to the authenticated user.
   const signer = async (data: SignerRequest): Promise<SignerResponse> => {
     const token = await getAccessToken().catch(() => null);
     const res = await fetch("/api/sign-payment", {
@@ -56,10 +59,9 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
   const { requestDeposit, status } = useBlinkDeposit({
     signer,
     environment: BLINK_ENV,
-    preload: false, // don't load Blink's iframe until the user taps Deposit
+    preload: false,
+    flowTimeoutMs: 90_000, // don't spin forever if Blink's flow stalls
   });
-  const [amount, setAmount] = useState(25);
-  const [busy, setBusy] = useState(false);
 
   async function readUsdc(): Promise<bigint> {
     if (!addr || !publicClient) return 0n;
@@ -71,53 +73,70 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
     })) as bigint;
   }
 
-  async function onDeposit() {
+  async function ensureGas() {
+    const token = await getAccessToken().catch(() => null);
+    await fetch("/api/faucet", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ address: addr }),
+    }).catch(() => {});
+  }
+
+  // approve + deposit whatever USDC is in the embedded wallet into the Vault.
+  async function creditToVault(value: bigint) {
+    if (!VAULT_ADDRESS) throw new Error("Vault not deployed");
+    await writeContractAsync({
+      address: USDC_ADDRESS,
+      abi: erc20Abi,
+      functionName: "approve",
+      args: [VAULT_ADDRESS, value],
+    });
+    await writeContractAsync({
+      address: VAULT_ADDRESS,
+      abi: vaultAbi,
+      functionName: "deposit",
+      args: [value],
+    });
+  }
+
+  async function onDepositBlink() {
     if (!addr) return toast.error("Sign in first");
     if (!VAULT_ADDRESS) return toast.error("Vault not deployed yet");
     setBusy(true);
     try {
-      // ensure the embedded wallet has gas for approve/deposit/open/close
-      const gasToken = await getAccessToken().catch(() => null);
-      await fetch("/api/faucet", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(gasToken ? { Authorization: `Bearer ${gasToken}` } : {}),
-        },
-        body: JSON.stringify({ address: addr }),
-      }).catch(() => {});
-
+      await ensureGas();
       const before = await readUsdc();
       const value = parseUnits(String(amount), 6);
-
-      // 1) Blink pulls USDC into the embedded wallet via its hosted flow.
-      await requestDeposit({
-        amount,
-        chainId: 84532,
-        address: addr,
-        token: USDC_ADDRESS,
-      });
+      await requestDeposit({ amount, chainId: 84532, address: addr, token: USDC_ADDRESS });
       toast.message("Funds on the way — waiting for settlement…");
-
-      // 2) Wait for the on-chain balance to actually arrive (routing can lag).
       const ok = await waitForBalance(readUsdc, before + value, 120_000);
-      if (!ok) return toast.error("Deposit didn't arrive in time — try again");
+      if (!ok) return toast.error("Deposit didn't arrive — try again or use the direct option");
       toast.success("USDC received — crediting collateral…");
-
-      // 3) Credit it to the Vault (embedded wallet signs both, seamlessly).
-      await writeContractAsync({
-        address: USDC_ADDRESS,
-        abi: erc20Abi,
-        functionName: "approve",
-        args: [VAULT_ADDRESS, value],
-      });
-      await writeContractAsync({
-        address: VAULT_ADDRESS,
-        abi: vaultAbi,
-        functionName: "deposit",
-        args: [value],
-      });
+      await creditToVault(value);
       toast.success(`Deposited $${amount} to your collateral`);
+      onDeposited?.();
+    } catch (e) {
+      toast.error(msgOf(e));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // Fallback while Blink's sandbox routing is down: credit USDC the user has
+  // already sent to their embedded wallet, straight into the Vault (our half).
+  async function onCreditExisting() {
+    if (!addr || !VAULT_ADDRESS) return;
+    setBusy(true);
+    try {
+      await ensureGas();
+      const bal = await readUsdc();
+      if (bal <= 0n) return toast.error("No USDC in your embedded wallet yet");
+      await creditToVault(bal);
+      toast.success(`Credited ${fmtUSD(Number(bal) / 1e6)} to your collateral`);
+      refetchWallet();
       onDeposited?.();
     } catch (e) {
       toast.error(msgOf(e));
@@ -129,7 +148,7 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
   const loading = busy || status === "signer-loading" || status === "iframe-active";
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-3">
       <label className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3">
         <span className="text-sm text-muted">$</span>
         <input
@@ -141,12 +160,37 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
         />
       </label>
       <button
-        onClick={onDeposit}
+        onClick={onDepositBlink}
         disabled={loading}
         className="h-11 rounded-xl bg-accent font-semibold text-black transition hover:brightness-110 active:scale-95 disabled:opacity-60"
       >
         {loading ? "Depositing…" : "Deposit with Blink"}
       </button>
+
+      {/* Fallback path — Blink sandbox routing is currently flaky */}
+      {addr && (
+        <details className="rounded-lg border border-border bg-surface-2 p-3 text-xs text-muted">
+          <summary className="cursor-pointer select-none">
+            Blink stuck? Deposit directly instead
+          </summary>
+          <div className="mt-2 flex flex-col gap-2">
+            <p>
+              Send Base Sepolia USDC to your embedded wallet, then credit it:
+            </p>
+            <code className="break-all rounded bg-background px-2 py-1 text-[11px] text-foreground">
+              {addr}
+            </code>
+            <p>In wallet now: {fmtUSD(walletUsdc)}</p>
+            <button
+              onClick={onCreditExisting}
+              disabled={busy || walletUsdc <= 0}
+              className="h-9 rounded-lg border border-border bg-surface font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-50"
+            >
+              {busy ? "Crediting…" : `Credit ${fmtUSD(walletUsdc)} to collateral`}
+            </button>
+          </div>
+        </details>
+      )}
     </div>
   );
 }
