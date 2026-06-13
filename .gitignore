@@ -38,3 +38,4 @@ spike/openapi.json
 coverage/
 .vercel
 .turbo
+*.tsbuildinfo
