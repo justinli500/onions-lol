@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>onions.lol — HEP vintage trade screen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Archivo+Black&family=Yellowtail&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f5ead0; --paper-2:#efe1bd; --card:#fbf3df;
+    --red:#a11e21; --red-br:#d8392b; --mustard:#f0b42a; --mustard-dp:#e0962a;
+    --ink:#2a100c; --green:#2f8f4e;
+    --line:rgba(161,30,33,.14); --bd:rgba(161,30,33,.85);
+    --ease-out:cubic-bezier(0.23,1,0.32,1);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--paper);color:var(--ink);
+    font:14px/1.5 "Archivo",system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(circle at 12% 8%, rgba(240,180,42,.18), transparent 30%),
+      radial-gradient(circle at 92% 84%, rgba(161,30,33,.07), transparent 35%);}
+  .tab{font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+  .script{font-family:"Yellowtail",cursive}
+  .blk{font-family:"Archivo Black",sans-serif}
+  .wrap{max-width:1320px;margin:0 auto;padding:18px 26px 50px}
+
+  /* nav */
+  nav{display:flex;align-items:center;justify-content:space-between;gap:14px;
+    border:2px solid var(--red);border-radius:999px;padding:8px 10px 8px 18px;background:var(--card)}
+  .brand{display:flex;align-items:baseline;gap:2px;font-weight:800;font-size:20px;color:var(--red);letter-spacing:-.01em}
+  .brand .s{font-family:"Yellowtail",cursive;font-size:27px;font-weight:400;margin-right:1px}
+  .brand .o{font-size:19px;margin-right:5px}
+  .navpills{display:flex;gap:4px}
+  .navpills a{text-decoration:none;color:var(--red);font-weight:700;font-size:13px;padding:8px 16px;border-radius:999px;transition:background .2s,color .2s}
+  .navpills a.on{background:var(--red);color:var(--paper)}
+  .navpills a:not(.on):hover{background:rgba(161,30,33,.08)}
+  .wallet{border:2px solid var(--red);background:var(--mustard);color:var(--red);font-weight:800;font-size:13px;
+    padding:8px 18px;border-radius:999px;cursor:pointer;transition:transform .14s var(--ease-out)}
+  .wallet:active{transform:scale(.96)}
+
+  /* marquee */
+  .marq{margin:14px 0 22px;background:var(--red);border-radius:14px;overflow:hidden;padding:9px 0;
+    border:2px solid var(--red)}
+  .marq .track{display:flex;gap:0;white-space:nowrap;width:max-content;animation:scroll 24s linear infinite}
+  .marq span{color:var(--paper);font-family:"Archivo Black",sans-serif;font-size:14px;letter-spacing:.06em;padding:0 18px}
+  .marq b{color:var(--mustard)}
+  @keyframes scroll{to{transform:translateX(-50%)}}
+
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:22px;align-items:start}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr}}
+
+  /* hero */
+  .livetag{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:12px;color:var(--red)}
+  .livedot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pulse 2s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(161,30,33,.5)}70%{box-shadow:0 0 0 7px rgba(161,30,33,0)}100%{box-shadow:0 0 0 0 rgba(161,30,33,0)}}
+  .heroscript{font-family:"Yellowtail",cursive;font-size:34px;color:var(--red);line-height:1;margin:8px 0 -4px;transform:rotate(-2deg);display:inline-block}
+  .price{font-family:"Archivo Black",sans-serif;font-size:72px;line-height:.95;color:var(--ink);letter-spacing:-.02em;margin:2px 0}
+  .price small{font-size:34px;color:var(--mustard-dp)}
+  .chgline{display:flex;align-items:center;gap:12px}
+  .chg{font-weight:800;font-size:15px;color:var(--green)} .chg.dn{color:var(--red)}
+  .chg .arw{display:inline-block;transition:transform .25s var(--ease-out)}
+  .chg.dn .arw{transform:rotate(90deg)}
+  .sub{color:rgba(42,16,12,.55);font-size:12px;font-weight:600}
+
+  .tags{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 4px}
+  .tagchip{border:1.5px solid var(--bd);border-radius:10px;padding:7px 12px;background:var(--card)}
+  .tagchip .k{font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;font-weight:800;color:var(--red)}
+  .tagchip .v{font-size:15px;font-weight:800;color:var(--ink)} .tagchip .v.g{color:var(--mustard-dp)} .tagchip .v.green{color:var(--green)}
+
+  /* chart card */
+  .chartcard{margin-top:16px;border:2.5px solid var(--red);border-radius:18px;background:var(--card);padding:14px 14px 8px;position:relative}
+  .starburst{position:absolute;top:-14px;right:18px;width:62px;height:62px;display:grid;place-items:center;
+    color:var(--paper);font-weight:800;font-size:10px;text-align:center;transform:rotate(8deg)}
+  .starburst svg{position:absolute;inset:0}
+  .chrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .tfs{display:flex;gap:2px}
+  .tfs button{all:unset;cursor:pointer;font-size:12px;font-weight:700;color:rgba(161,30,33,.55);padding:5px 10px;border-radius:999px;transition:.2s}
+  .tfs button.on{background:var(--mustard);color:var(--red)}
+  .seg{position:relative;display:inline-flex;border:1.5px solid var(--bd);border-radius:999px;padding:3px;background:var(--paper)}
+  .seg .ind{position:absolute;top:3px;left:3px;height:calc(100% - 6px);background:var(--red);border-radius:999px;transition:transform .26s var(--ease-out),width .26s var(--ease-out)}
+  .seg button{all:unset;cursor:pointer;position:relative;z-index:1;font-size:12px;font-weight:700;padding:6px 13px;color:var(--red);transition:color .2s}
+  .seg button.on{color:var(--paper)} .seg button:active{transform:scale(.96)}
+  .chartbox{height:312px;transition:filter .18s ease}
+  .chart{width:100%;height:312px;display:block}
+  .hint{font-size:11px;font-weight:600;color:rgba(42,16,12,.5);padding:4px 2px 6px}
+
+  /* order ticket */
+  .ticket{border:2.5px solid var(--red);border-radius:18px;background:var(--card);overflow:hidden}
+  .thead{background:var(--red);color:var(--paper);padding:11px 16px;display:flex;justify-content:space-between;align-items:center}
+  .thead .t{font-family:"Archivo Black",sans-serif;font-size:14px;letter-spacing:.04em}
+  .thead .n{font-weight:700;font-size:12px;color:var(--mustard)}
+  .tbody{padding:16px}
+  .coll{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:rgba(42,16,12,.6);padding-bottom:12px;border-bottom:2px dotted var(--line)}
+  .ls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+  .ls button{all:unset;cursor:pointer;text-align:center;padding:11px 0;font-family:"Archivo Black",sans-serif;font-size:14px;
+    border:2px solid var(--red);border-radius:11px;color:var(--red);transition:.2s var(--ease-out)}
+  .ls button.on.long{background:var(--green);border-color:var(--green);color:#fff}
+  .ls button.on.short{background:var(--red);color:var(--paper)}
+  .ls button:active{transform:scale(.97)}
+  .fld{margin-top:14px}
+  .fld .l{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--red);margin-bottom:6px;display:flex;justify-content:space-between}
+  .fld .l .mx{color:rgba(42,16,12,.5)} .fld .l .mx b{color:var(--green)}
+  .inp{display:flex;align-items:center;gap:8px;background:var(--paper);border:1.5px solid var(--bd);border-radius:10px;padding:10px 13px}
+  .inp .pre{font-weight:800;color:var(--red)} .inp input{all:unset;margin-left:auto;text-align:right;font-weight:800;font-size:16px;width:60%;font-variant-numeric:tabular-nums;color:var(--ink)}
+  .pills{position:relative;display:flex;background:var(--paper);border:1.5px solid var(--bd);border-radius:11px;padding:3px;margin-top:0}
+  .pills .ind{position:absolute;top:3px;left:3px;height:calc(100% - 6px);background:var(--mustard);border-radius:8px;transition:transform .26s var(--ease-out)}
+  .pills button{all:unset;cursor:pointer;position:relative;z-index:1;flex:1;text-align:center;font-weight:800;font-size:12px;padding:8px 0;color:var(--red);transition:color .2s}
+  .pills button.on{color:var(--red)} .pills button:active{transform:scale(.96)}
+  .cta{position:relative;margin-top:18px;width:100%;border:none;cursor:pointer;border-radius:12px;padding:15px 0;
+    font-family:"Archivo Black",sans-serif;font-size:16px;letter-spacing:.03em;color:#fff;background:var(--green);
+    transition:transform .14s var(--ease-out),filter .2s}
+  .cta:hover{filter:brightness(1.05)} .cta:active{transform:scale(.985)}
+  .summ{margin-top:14px;padding-top:12px;border-top:2px dotted var(--line)}
+  .srow{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;padding:5px 0;color:rgba(42,16,12,.6)}
+  .srow .lead{flex:1;border-bottom:2px dotted var(--line);height:1px}
+  .srow .v{color:var(--ink)} .srow .v.g{color:var(--mustard-dp)}
+
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.001ms!important;transition-duration:.001ms!important}.marq .track{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="brand"><span class="o">🧅</span><span class="s">onions</span><span>.lol</span></div>
+    <div class="navpills"><a href="#" class="on">Trade</a><a href="#">Markets</a><a href="#">About</a><a href="#">Shop</a></div>
+    <button class="wallet">Connect Wallet</button>
+  </nav>
+
+  <div class="marq"><div class="track" id="track"></div></div>
+
+  <div class="grid">
+    <!-- LEFT -->
+    <div>
+      <span class="livetag"><span class="livedot"></span>LIVE · settles vs USDA</span>
+      <div class="heroscript">the onion index</div>
+      <div class="price tab" id="price">$24<small>.18</small></div>
+      <div class="chgline">
+        <span class="chg tab" id="chg"><span class="arw">▲</span> <span id="chgv">+3.80%</span> today</span>
+        <span class="sub">NY Terminal · yellow · 50-lb sack · US No.1</span>
+      </div>
+
+      <div class="tags">
+        <div class="tagchip"><div class="k">Mark · synthetic</div><div class="v tab" id="markv">$24.18</div></div>
+        <div class="tagchip"><div class="k">USDA Settlement</div><div class="v g tab">$23.90</div></div>
+        <div class="tagchip"><div class="k">24h Range</div><div class="v tab">$23.40–24.55</div></div>
+        <div class="tagchip"><div class="k">Settles in</div><div class="v green tab" id="cd">14h 22m</div></div>
+      </div>
+
+      <div class="chartcard">
+        <div class="starburst"><svg viewBox="0 0 100 100"><path id="burst" fill="#a11e21"></path></svg><span>SINCE<br>1958</span></div>
+        <div class="chrow">
+          <div class="tfs" id="tfs"><button>15m</button><button>1H</button><button>4H</button><button class="on">1D</button><button>1W</button></div>
+          <div class="seg" id="seg"><span class="ind"></span>
+            <button class="on" data-mode="line">Line</button><button data-mode="candles">Candles</button><button data-mode="onions">🧅 Onions</button></div>
+        </div>
+        <div class="chartbox" id="chartbox"><svg id="chart" class="chart" viewBox="0 0 920 312" preserveAspectRatio="none"></svg></div>
+        <div class="hint">Toggle <b>🧅 Onions</b> — candles become flat leeks. Green = up, red = down.</div>
+      </div>
+    </div>
+
+    <!-- RIGHT: ORDER TICKET -->
+    <div class="ticket">
+      <div class="thead"><span class="t">ORDER TICKET</span><span class="n">№ 1958</span></div>
+      <div class="tbody">
+        <div class="coll"><span>Collateral</span><span class="tab">$0.00 🧅</span></div>
+        <div class="ls" id="ls"><button class="on long" data-side="long">LONG</button><button class="short" data-side="short">SHORT</button></div>
+        <div class="fld"><div class="l"><span>Margin</span><span class="mx">MAX <b>$0.00</b></span></div>
+          <div class="inp"><span class="pre">$</span><input value="0" inputmode="decimal"></div></div>
+        <div class="fld"><div class="l"><span>Leverage</span></div>
+          <div class="pills" id="lev"><span class="ind"></span><button>1×</button><button class="on">2×</button><button>5×</button><button>10×</button></div></div>
+        <div class="fld"><div class="l"><span>Expiry · dated</span></div>
+          <div class="pills" id="exp"><span class="ind"></span><button>15m</button><button class="on">1h</button><button>1d</button></div></div>
+        <button class="cta" id="cta">OPEN LONG</button>
+        <div class="summ">
+          <div class="srow"><span>Entry (mark)</span><span class="lead"></span><span class="v tab" id="entry">$24.18</span></div>
+          <div class="srow"><span>Notional</span><span class="lead"></span><span class="v tab">$0.00</span></div>
+          <div class="srow"><span>Settles against</span><span class="lead"></span><span class="v g">USDA index</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+function E(t,a){const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;}
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* marquee */
+const seg1='VINTAGE · BANNED IN AMERICA · SINCE 1958 · CASH-SETTLED vs USDA · TRADE THE FORBIDDEN BULB · ';
+const track=document.getElementById('track');
+const unit=document.createElement('div');unit.style.display='flex';
+function fill(p){const s=document.createElement('span');s.innerHTML=p.replace(/·/g,'<b>·</b>');return s;}
+for(let i=0;i<4;i++) unit.appendChild(fill(seg1));
+track.appendChild(unit.cloneNode(true));track.appendChild(unit.cloneNode(true));
+
+/* starburst path */
+(function(){let d='';const cx=50,cy=50,n=14;for(let i=0;i<n*2;i++){const r=i%2?22:50;const a=Math.PI*i/n;
+  d+=(i?'L':'M')+(cx+r*Math.cos(a)).toFixed(1)+' '+(cy+r*Math.sin(a)).toFixed(1)+' ';}
+  document.getElementById('burst').setAttribute('d',d+'Z');})();
+
+/* ---- chart data (seeded) ---- */
+function mul(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const rnd=mul(7),N=30,base=21.0,C=[];let prev=base;
+const tr=[0,.05,.1,.2,.35,.5,.62,.8,.9,1,1.05,.95,.8,.7,.62,.7,.85,1,1.15,1.25,1.2,1.05,.95,1.05,1.2,1.35,1.5,1.6,1.7,1.85];
+for(let i=0;i<N;i++){const o=prev,c=base+tr[i]*1.6+(rnd()-.5)*.5;
+  C.push({o,h:Math.max(o,c)+rnd()*.5+.1,l:Math.min(o,c)-rnd()*.5-.1,c});prev=c;}
+const lo=Math.min(...C.map(b=>b.l))-.3,hi=Math.max(...C.map(b=>b.h))+.3;
+const W=920,H=312,pad=10,pb=16,X=i=>pad+i*(W-pad*2)/(N-1),Y=v=>pad+(1-(v-lo)/(hi-lo))*(H-pad-pb);
+const svg=document.getElementById('chart');
+const defs=E('defs',{});
+defs.innerHTML='<linearGradient id="f" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#f0b42a" stop-opacity=".55"/><stop offset="60%" stop-color="#f0b42a" stop-opacity=".12"/><stop offset="100%" stop-color="#f0b42a" stop-opacity="0"/></linearGradient>';
+svg.appendChild(defs);
+for(let k=0;k<=4;k++){const y=pad+(H-pad-pb)*k/4;svg.appendChild(E('line',{x1:pad,y1:y,x2:W-pad,y2:y,stroke:'rgba(161,30,33,.13)','stroke-width':1,'stroke-dasharray':'2 5'}));}
+
+const gLine=E('g',{}),gCand=E('g',{opacity:0}),gOn=E('g',{opacity:0});
+function smooth(p){let d=`M ${p[0][0]} ${p[0][1]}`;for(let i=0;i<p.length-1;i++){const a=p[i-1]||p[i],b=p[i],c=p[i+1],e=p[i+2]||c;
+  d+=` C ${b[0]+(c[0]-a[0])/6} ${b[1]+(c[1]-a[1])/6} ${c[0]-(e[0]-b[0])/6} ${c[1]-(e[1]-b[1])/6} ${c[0]} ${c[1]}`;}return d;}
+const pts=C.map((b,i)=>[X(i),Y(b.c)]),lp=smooth(pts);
+gLine.appendChild(E('path',{d:`${lp} L ${W-pad} ${H} L ${pad} ${H} Z`,fill:'url(#f)'}));
+const lineEl=E('path',{d:lp,fill:'none',stroke:'#c0271f','stroke-width':3,'stroke-linecap':'round','stroke-linejoin':'round'});
+gLine.appendChild(lineEl);
+const last=pts[pts.length-1];
+gLine.appendChild(E('circle',{cx:last[0],cy:last[1],r:5,fill:'#a11e21'}));
+gLine.appendChild(E('circle',{cx:last[0],cy:last[1],r:5,fill:'none',stroke:'#a11e21','stroke-opacity':.3,'stroke-width':6}));
+svg.appendChild(gLine);
+const cw=(W-pad*2)/N*.6;
+C.forEach((b,i)=>{const x=X(i),up=b.c>=b.o,col=up?'#2f8f4e':'#c0271f';
+  gCand.appendChild(E('line',{x1:x,y1:Y(b.h),x2:x,y2:Y(b.l),stroke:col,'stroke-width':1.4}));
+  const t=Y(Math.max(b.o,b.c)),bt=Y(Math.min(b.o,b.c));
+  gCand.appendChild(E('rect',{x:x-cw/2,y:t,width:cw,height:Math.max(1.5,bt-t),fill:col,rx:1}));});
+svg.appendChild(gCand);
+const ow=(W-pad*2)/N*.5,half=ow/2;
+C.forEach((b,i)=>{const x=X(i),up=b.c>=b.o,yH=Y(b.h),yL=Y(b.l),yT=Y(Math.max(b.o,b.c)),yB=Y(Math.min(b.o,b.c));
+  const leaf=up?'#2f8f4e':'#c0271f',stalk=up?'#3aa15c':'#cf4654',bulb='#eccb6a',edge='rgba(42,16,12,.4)';
+  for(let k=-1;k<=1;k++)gOn.appendChild(E('path',{d:`M ${x} ${yB} Q ${x+k*half*.7} ${(yB+yL)/2} ${x+k*half*.9} ${yL}`,fill:'none',stroke:stalk,'stroke-width':1.1,'stroke-linecap':'round',opacity:.8}));
+  gOn.appendChild(E('rect',{x:x-half*.6,y:yT,width:ow*.6,height:Math.max(2.5,yB-yT),rx:half*.5,fill:stalk,stroke:edge,'stroke-width':.5}));
+  gOn.appendChild(E('ellipse',{cx:x,cy:yB,rx:half*.8,ry:half*.62,fill:bulb,stroke:edge,'stroke-width':.5}));
+  [-1,0,1].forEach(k=>gOn.appendChild(E('path',{d:`M ${x} ${yT} Q ${x+k*half*.5} ${(yT+yH)/2} ${x+k*half*1.15} ${yH}`,fill:'none',stroke:leaf,'stroke-width':2,'stroke-linecap':'round'})));});
+svg.appendChild(gOn);
+
+const groups={line:gLine,candles:gCand,onions:gOn};
+function drawLine(){if(reduce)return;const L=lineEl.getTotalLength();lineEl.style.transition='none';lineEl.style.strokeDasharray=L;lineEl.style.strokeDashoffset=L;lineEl.getBoundingClientRect();lineEl.style.transition='stroke-dashoffset .7s var(--ease-out)';lineEl.style.strokeDashoffset=0;}
+function setMode(m){const box=document.getElementById('chartbox');box.style.filter='blur(2px)';for(const k in groups)groups[k].setAttribute('opacity',k===m?1:0);if(m==='line')drawLine();setTimeout(()=>box.style.filter='none',150);}
+drawLine();
+
+function wireSeg(id,cb){const s=document.getElementById(id),ind=s.querySelector('.ind'),bs=[...s.querySelectorAll('button')];
+  const mv=b=>{ind.style.transform=`translateX(${b.offsetLeft-3}px)`;ind.style.width=b.offsetWidth+'px';};
+  bs.forEach(b=>b.addEventListener('click',()=>{bs.forEach(x=>x.classList.remove('on'));b.classList.add('on');mv(b);cb&&cb(b);}));
+  requestAnimationFrame(()=>mv(s.querySelector('.on')));}
+wireSeg('seg',b=>setMode(b.dataset.mode));wireSeg('lev');wireSeg('exp');
+const tfs=document.getElementById('tfs');tfs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{tfs.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');}));
+
+/* long/short */
+const ls=document.getElementById('ls'),cta=document.getElementById('cta');
+ls.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{ls.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  const sh=b.dataset.side==='short';cta.textContent=sh?'OPEN SHORT':'OPEN LONG';cta.style.background=sh?'var(--red)':'var(--green)';}));
+
+/* live price */
+let px=24.18;const open=23.29,pe=document.getElementById('price'),chg=document.getElementById('chg'),chgv=document.getElementById('chgv'),markv=document.getElementById('markv'),entry=document.getElementById('entry');
+setInterval(()=>{const d=(rnd()-.48)*.06;px=Math.max(open*.9,px+d);const[i,dec]=px.toFixed(2).split('.');pe.innerHTML=`$${i}<small>.${dec}</small>`;
+  const pct=(px/open-1)*100,up=pct>=0;chg.classList.toggle('dn',!up);chgv.textContent=`${up?'+':''}${pct.toFixed(2)}%`;markv.textContent=entry.textContent=`$${px.toFixed(2)}`;},1400);
+let secs=14*3600+22*60;setInterval(()=>{secs=Math.max(0,secs-1);const h=Math.floor(secs/3600),m=Math.floor(secs%3600/60);document.getElementById('cd').textContent=`${h}h ${String(m).padStart(2,'0')}m`;},1000);
+</script>
+</body>
+</html>
