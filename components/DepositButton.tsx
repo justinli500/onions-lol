@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useWallets, usePrivy } from "@privy-io/react-auth";
 import { usePublicClient, useWriteContract } from "wagmi";
-import { useBlinkDeposit } from "@swype-org/deposit/react";
-import type { SignerRequest, SignerResponse } from "@swype-org/deposit";
+import { Deposit } from "@swype-org/deposit";
+import type { DepositStatus, DepositRequest, SignerRequest, SignerResponse } from "@swype-org/deposit";
 import { parseUnits } from "viem";
 import { toast } from "sonner";
 import { USDC_ADDRESS, VAULT_ADDRESS, erc20Abi, vaultAbi } from "@/lib/contracts";
@@ -29,6 +29,56 @@ async function waitForBalance(
   return false;
 }
 
+// Remount-safe Blink integration. The SDK's own useBlinkDeposit nulls its ref in
+// effect cleanup but recreates it only on render, so a re-render/Strict-Mode
+// double-invoke crashes on `.on` of null. Here the Deposit is created INSIDE the
+// effect, so the instance + subscription live and die together — no null ref.
+function useSafeBlinkDeposit(getToken: () => Promise<string | null>) {
+  const [status, setStatus] = useState<DepositStatus>("idle");
+  const depositRef = useRef<Deposit | null>(null);
+  const getTokenRef = useRef(getToken);
+  getTokenRef.current = getToken;
+
+  useEffect(() => {
+    const signer = async (data: SignerRequest): Promise<SignerResponse> => {
+      const token = await getTokenRef.current().catch(() => null);
+      const res = await fetch("/api/sign-payment", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const e = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(e.error ?? `signer ${res.status}`);
+      }
+      return res.json();
+    };
+    const d = new Deposit({ signer, environment: BLINK_ENV, preload: false, flowTimeoutMs: 90_000 });
+    depositRef.current = d;
+    const onStatus = (s: DepositStatus) => setStatus(s);
+    d.on("status-change", onStatus);
+    return () => {
+      try {
+        d.off("status-change", onStatus);
+        d.destroy();
+      } catch {
+        /* noop */
+      }
+      depositRef.current = null;
+    };
+  }, []);
+
+  const requestDeposit = useCallback((req: DepositRequest) => {
+    const d = depositRef.current;
+    return d ? d.requestDeposit(req) : Promise.reject(new Error("deposit not ready"));
+  }, []);
+
+  return { status, requestDeposit };
+}
+
 function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
   const { wallets } = useWallets();
   const { getAccessToken } = usePrivy();
@@ -39,29 +89,7 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
   const [amount, setAmount] = useState(25);
   const [busy, setBusy] = useState(false);
 
-  const signer = async (data: SignerRequest): Promise<SignerResponse> => {
-    const token = await getAccessToken().catch(() => null);
-    const res = await fetch("/api/sign-payment", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify(data),
-    });
-    if (!res.ok) {
-      const e = (await res.json().catch(() => ({}))) as { error?: string };
-      throw new Error(e.error ?? `signer ${res.status}`);
-    }
-    return res.json();
-  };
-
-  const { requestDeposit, status } = useBlinkDeposit({
-    signer,
-    environment: BLINK_ENV,
-    preload: false,
-    flowTimeoutMs: 90_000, // don't spin forever if Blink's flow stalls
-  });
+  const { requestDeposit, status } = useSafeBlinkDeposit(getAccessToken);
 
   async function readUsdc(): Promise<bigint> {
     if (!addr || !publicClient) return 0n;
