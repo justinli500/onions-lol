@@ -1,0 +1,17 @@
+{
+  "name": "onions-keeper",
+  "private": true,
+  "type": "module",
+  "description": "Onion oracle keeper — pushes the deterministic mark + USDA anchor on-chain",
+  "scripts": {
+    "start": "tsx src/keeper.ts",
+    "anchor": "tsx src/usda.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "viem": "^2.52.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
