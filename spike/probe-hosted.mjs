@@ -11,7 +11,7 @@ const TOKEN_GUESS = '0x036CbD53842c5426634e7929541eC2318f3dCF7e'; // Circle Base
 
 async function probe(encoding) {
   const signed = buildSignedDeposit({ amount: 25, chainId: 84532, address: ADDRESS, token: TOKEN_GUESS, encoding });
-  const url = hostedUrl(signed);
+  const url = hostedUrl(signed) + (process.env.ONE_TAP ? "&enableFullWidget=false" : "");
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const page = await browser.newPage();
   const api = [];

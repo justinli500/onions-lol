@@ -56,7 +56,16 @@ function useSafeBlinkDeposit(getToken: () => Promise<string | null>) {
       }
       return res.json();
     };
-    const d = new Deposit({ signer, environment: BLINK_ENV, preload: false, flowTimeoutMs: 90_000 });
+    const d = new Deposit({
+      signer,
+      environment: BLINK_ENV,
+      preload: false,
+      flowTimeoutMs: 90_000,
+      // Skip the full "Deposit Options" widget (routed/cross-chain sources that
+      // hit Blink's broken testnet route-pricing) and use the one-tap flow —
+      // per Blink dev guidance, and what the prize rewards.
+      enableFullWidget: false,
+    });
     depositRef.current = d;
     const onStatus = (s: DepositStatus) => setStatus(s);
     d.on("status-change", onStatus);
