@@ -36,9 +36,11 @@ function TradePanelInner() {
   const [lev, setLev] = useState(2);
   const [expIdx, setExpIdx] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [showDeposit, setShowDeposit] = useState(false);
 
   const notional = margin * lev;
   const isLong = side === SIDE.LONG;
+  const tooMuch = margin > collateral;
 
   async function open() {
     if (!FUTURES_ADDRESS) return toast.error("Exchange not deployed yet");
@@ -72,6 +74,29 @@ function TradePanelInner() {
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted">
+          Collateral{" "}
+          <span className="tabular text-foreground">{fmtUSD(collateral)}</span>
+        </span>
+        <button
+          onClick={() => setShowDeposit((v) => !v)}
+          className="rounded-md border border-border px-2 py-1 font-medium text-foreground transition hover:bg-surface-2"
+        >
+          {showDeposit ? "Close" : "+ Deposit"}
+        </button>
+      </div>
+      {showDeposit && (
+        <div className="rounded-lg border border-border bg-surface-2 p-3">
+          <DepositButton
+            onDeposited={() => {
+              refetch();
+              setShowDeposit(false);
+            }}
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-1 rounded-lg bg-surface-2 p-1">
         <button
           onClick={() => setSide(SIDE.LONG)}
@@ -90,7 +115,13 @@ function TradePanelInner() {
       <div>
         <div className="mb-1 flex justify-between text-xs text-muted">
           <span>Margin</span>
-          <span>Avail {fmtUSD(collateral)}</span>
+          <button
+            type="button"
+            onClick={() => setMargin(Math.floor(collateral))}
+            className="transition hover:text-foreground"
+          >
+            Avail {fmtUSD(collateral)} · Max
+          </button>
         </div>
         <label className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3">
           <span className="text-sm text-muted">$</span>
@@ -146,12 +177,16 @@ function TradePanelInner() {
 
       <button
         onClick={open}
-        disabled={busy || margin <= 0}
+        disabled={busy || margin <= 0 || tooMuch}
         className={`h-11 rounded-xl font-semibold transition hover:brightness-110 active:scale-95 disabled:opacity-50 ${
           isLong ? "bg-up text-black" : "bg-down text-white"
         }`}
       >
-        {busy ? "Opening…" : `Open ${isLong ? "Long" : "Short"}`}
+        {busy
+          ? "Opening…"
+          : tooMuch
+            ? "Insufficient collateral"
+            : `Open ${isLong ? "Long" : "Short"}`}
       </button>
     </div>
   );
