@@ -5,7 +5,6 @@ import { cn } from "@/lib/cn";
 import { usePrice } from "@/lib/usePrice";
 import { fmtPrice } from "@/lib/format";
 import { StatChip } from "@/components/trade/StatChip";
-import { BAND } from "@shared/constants";
 
 function useSettleCountdown() {
   const [label, setLabel] = useState("--");
@@ -33,9 +32,6 @@ export function PriceHeader() {
   const { price, changePct, anchorUsd } = usePrice();
   const up = changePct >= 0;
   const settle = useSettleCountdown();
-
-  const bandLow = fmtPrice(anchorUsd * (1 - BAND));
-  const bandHigh = fmtPrice(anchorUsd * (1 + BAND));
 
   return (
     <div>
@@ -70,10 +66,6 @@ export function PriceHeader() {
           label="USDA Settlement"
           value={fmtPrice(anchorUsd)}
           tone="gold"
-        />
-        <StatChip
-          label={`Band ±${(BAND * 100).toFixed(0)}%`}
-          value={`${bandLow} – ${bandHigh}`}
         />
         <StatChip label="Settles in" value={settle} tone="green" />
       </div>
