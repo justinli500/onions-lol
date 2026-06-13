@@ -61,10 +61,10 @@ function useSafeBlinkDeposit(getToken: () => Promise<string | null>) {
       environment: BLINK_ENV,
       preload: false,
       flowTimeoutMs: 90_000,
-      // Keep the full widget so the user can pick USDC as the funding source.
-      // The native-ETH source can't be priced on testnet (ETH->USDC swap =>
-      // MANUAL_TRANSFER_PRICE_PROBE_FAILED); USDC->USDC is a direct transfer
-      // that succeeds. One-tap appears to default to native ETH, so it hangs.
+      // One-tap flow (the "one click, never leaves the app" the prize rewards).
+      // NOTE: pay with USDC, not native ETH — ETH->USDC needs a testnet swap that
+      // can't be priced (MANUAL_TRANSFER_PRICE_PROBE_FAILED); USDC->USDC is direct.
+      enableFullWidget: false,
     });
     depositRef.current = d;
     const onStatus = (s: DepositStatus) => setStatus(s);
