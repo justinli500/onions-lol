@@ -39,3 +39,7 @@ coverage/
 .vercel
 .turbo
 *.tsbuildinfo
+
+# brainstorming visual companion scratch
+.superpowers/
+.gstack/
