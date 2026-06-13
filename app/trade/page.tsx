@@ -23,7 +23,7 @@ export default function TradePage() {
   const [timeframe, setTimeframe] = useState<TimeframeId>("1D");
 
   return (
-    <div className="max-w-[1320px] mx-auto px-[26px] pt-[18px] pb-[50px]">
+    <div className="w-full max-w-[1320px] mx-auto px-[26px] pt-[18px] pb-[50px]">
       <Nav />
       <Marquee />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-[22px] items-start">
