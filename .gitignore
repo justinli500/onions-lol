@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+**/node_modules/
+.pnp
+.pnp.js
+
+# secrets & keys — NEVER commit
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+**/.keys/
+keys/
+
+# next.js
+.next/
+out/
+build/
+next-env.d.ts
+
+# foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+contracts/.gas-snapshot
+contracts/dependencies/
+
+# spike runtime artifacts (merchantId is regenerable; keys already ignored)
+spike/registration.json
+spike/pkg/
+spike/*.tgz
+spike/openapi.json
+
+# misc
+.DS_Store
+*.log
+coverage/
+.vercel
+.turbo

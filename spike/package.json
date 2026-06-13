@@ -1,0 +1,13 @@
+{
+  "name": "onions-blink-spike",
+  "private": true,
+  "type": "module",
+  "description": "Phase 1 empirical spike for Blink sandbox: signer encoding + chain delivery probes",
+  "scripts": {
+    "test:signer": "node test-signer.mjs",
+    "probe:hosted": "node probe-hosted.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.60.0"
+  }
+}
