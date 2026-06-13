@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets, usePrivy } from "@privy-io/react-auth";
 import { usePublicClient, useWriteContract } from "wagmi";
 import { useBlinkDeposit } from "@swype-org/deposit/react";
+import type { SignerRequest, SignerResponse } from "@swype-org/deposit";
 import { parseUnits } from "viem";
 import { toast } from "sonner";
 import { USDC_ADDRESS, VAULT_ADDRESS, erc20Abi, vaultAbi } from "@/lib/contracts";
@@ -28,11 +29,32 @@ async function waitForBalance(
 
 function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
   const { wallets } = useWallets();
+  const { getAccessToken } = usePrivy();
   const addr = wallets[0]?.address as `0x${string}` | undefined;
   const publicClient = usePublicClient();
   const { writeContractAsync } = useWriteContract();
+
+  // Signer-function form so we can attach the Privy session token; the hardened
+  // /api/sign-payment binds the signed address to the authenticated user.
+  const signer = async (data: SignerRequest): Promise<SignerResponse> => {
+    const token = await getAccessToken().catch(() => null);
+    const res = await fetch("/api/sign-payment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+      const e = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(e.error ?? `signer ${res.status}`);
+    }
+    return res.json();
+  };
+
   const { requestDeposit, status } = useBlinkDeposit({
-    signer: "/api/sign-payment",
+    signer,
     environment: BLINK_ENV,
   });
   const [amount, setAmount] = useState(25);
