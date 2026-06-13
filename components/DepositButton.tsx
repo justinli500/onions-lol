@@ -149,8 +149,8 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <label className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3">
-        <span className="text-sm text-muted">$</span>
+      <label className="flex items-center gap-2 rounded-lg border border-line bg-paper px-3">
+        <span className="text-sm text-ink/55">$</span>
         <input
           type="number"
           min={1}
@@ -162,14 +162,14 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
       <button
         onClick={onDepositBlink}
         disabled={loading}
-        className="h-11 rounded-xl bg-accent font-semibold text-black transition hover:brightness-110 active:scale-95 disabled:opacity-60"
+        className="w-full bg-green text-white font-display rounded-[12px] py-3 active:scale-[0.985] transition hover:brightness-105 disabled:opacity-60"
       >
         {loading ? "Depositing…" : "Deposit with Blink"}
       </button>
 
       {/* Fallback path — Blink sandbox routing is currently flaky */}
       {addr && (
-        <details className="rounded-lg border border-border bg-surface-2 p-3 text-xs text-muted">
+        <details className="rounded-lg border border-line bg-paper p-3 text-xs text-ink/55">
           <summary className="cursor-pointer select-none">
             Blink stuck? Deposit directly instead
           </summary>
@@ -177,14 +177,14 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
             <p>
               Send Base Sepolia USDC to your embedded wallet, then credit it:
             </p>
-            <code className="break-all rounded bg-background px-2 py-1 text-[11px] text-foreground">
+            <code className="break-all rounded bg-card px-2 py-1 text-[11px]">
               {addr}
             </code>
             <p>In wallet now: {fmtUSD(walletUsdc)}</p>
             <button
               onClick={onCreditExisting}
               disabled={busy || walletUsdc <= 0}
-              className="h-9 rounded-lg border border-border bg-surface font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-50"
+              className="w-full bg-green text-white font-display rounded-[12px] py-3 active:scale-[0.985] transition hover:brightness-105 disabled:opacity-50"
             >
               {busy ? "Crediting…" : `Credit ${fmtUSD(walletUsdc)} to collateral`}
             </button>
@@ -201,7 +201,7 @@ export function DepositButton(props: { onDeposited?: () => void }) {
       <button
         disabled
         title="Set NEXT_PUBLIC_PRIVY_APP_ID to enable deposits"
-        className="h-11 w-full cursor-not-allowed rounded-xl border border-border bg-surface text-sm font-medium text-muted"
+        className="w-full cursor-not-allowed bg-green/40 text-white font-display rounded-[12px] py-3 text-sm"
       >
         Deposit with Blink
       </button>

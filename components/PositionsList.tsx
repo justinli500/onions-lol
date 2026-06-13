@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { toast } from "sonner";
 import { FUTURES_ADDRESS, futuresAbi } from "@/lib/contracts";
@@ -21,10 +22,16 @@ type PositionTuple = readonly [
 ];
 
 function Empty({ text }: { text: string }) {
-  return <p className="text-sm text-muted">{text}</p>;
+  return <p className="text-sm text-ink/55">{text}</p>;
 }
 
 function PositionRow({ id }: { id: bigint }) {
+  const [nowSec, setNowSec] = useState(() => Math.floor(Date.now() / 1000));
+  useEffect(() => {
+    const intervalId = setInterval(() => setNowSec(Math.floor(Date.now() / 1000)), 1000);
+    return () => clearInterval(intervalId);
+  }, []);
+
   const { writeContractAsync } = useWriteContract();
   const { data: pos } = useReadContract({
     address: FUTURES_ADDRESS,
@@ -49,7 +56,7 @@ function PositionRow({ id }: { id: bigint }) {
   const isLong = side === 0;
   const notional = fromUSDC(p[2]);
   const entry = fromE8(p[3]);
-  const expired = Date.now() / 1000 >= Number(p[5]);
+  const expired = nowSec >= Number(p[5]);
   const pnlUsd = pnl !== undefined ? fromUSDC(pnl as bigint) : 0;
 
   async function act() {
@@ -68,19 +75,19 @@ function PositionRow({ id }: { id: bigint }) {
   }
 
   return (
-    <tr className="border-t border-border">
-      <td className={`py-2 font-semibold ${isLong ? "text-up" : "text-down"}`}>
+    <tr className="border-t border-line border-dotted">
+      <td className={`py-2 font-semibold ${isLong ? "text-green" : "text-red"}`}>
         {isLong ? "Long" : "Short"}
       </td>
       <td className="tabular">{fmtUSD(notional)}</td>
       <td className="tabular">{fmtPrice(entry)}</td>
-      <td className={`tabular ${pnlUsd >= 0 ? "text-up" : "text-down"}`}>
+      <td className={`tabular ${pnlUsd >= 0 ? "text-green" : "text-red"}`}>
         {fmtSigned(pnlUsd)}
       </td>
       <td className="text-right">
         <button
           onClick={act}
-          className="rounded-md border border-border px-2.5 py-1 text-xs transition hover:bg-surface-2"
+          className="border-2 border-red text-red rounded-full px-3 py-1 text-xs hover:bg-red/[0.08] active:scale-[0.97] transition"
         >
           {expired ? "Settle" : "Close"}
         </button>
@@ -106,7 +113,7 @@ function PositionsInner() {
   return (
     <table className="w-full text-sm">
       <thead>
-        <tr className="text-left text-xs text-muted">
+        <tr className="text-left text-xs text-red uppercase">
           <th className="py-1 font-normal">Side</th>
           <th className="font-normal">Notional</th>
           <th className="font-normal">Entry</th>
