@@ -18,7 +18,17 @@ for (const [name, path] of [
   } catch (e) {
     console.log(name, "goto:", e.message);
   }
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1500);
+  // scroll through to trigger whileInView reveals, then back to top
+  await page.evaluate(async () => {
+    const h = document.body.scrollHeight;
+    for (let y = 0; y <= h; y += 400) {
+      window.scrollTo(0, y);
+      await new Promise((r) => setTimeout(r, 60));
+    }
+    window.scrollTo(0, 0);
+  });
+  await page.waitForTimeout(1200);
   await page.screenshot({ path: `/tmp/onions-${name}.png`, fullPage: true });
   console.log(`${name} -> /tmp/onions-${name}.png`);
 }
