@@ -14,6 +14,14 @@ const PriceChart = dynamic(
   () => import("@/components/PriceChart").then((m) => m.PriceChart),
   { ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-lg bg-surface-2" /> },
 );
+const TradePanel = dynamic(
+  () => import("@/components/TradePanel").then((m) => m.TradePanel),
+  { ssr: false },
+);
+const PositionsList = dynamic(
+  () => import("@/components/PositionsList").then((m) => m.PositionsList),
+  { ssr: false },
+);
 
 function Stat({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
@@ -61,12 +69,12 @@ export default function TradePage() {
           </section>
           <section className="min-h-[200px] rounded-xl border border-border bg-surface p-4">
             <h2 className="mb-3 text-sm font-semibold">Positions</h2>
-            <p className="text-sm text-muted">Open a position to see it here.</p>
+            <PositionsList />
           </section>
         </div>
         <aside className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
           <h2 className="text-sm font-semibold">Trade</h2>
-          <p className="text-sm text-muted">Trade panel — wiring next.</p>
+          <TradePanel />
         </aside>
       </main>
 

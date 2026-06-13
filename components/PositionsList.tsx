@@ -1,0 +1,129 @@
+"use client";
+
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { toast } from "sonner";
+import { FUTURES_ADDRESS, futuresAbi } from "@/lib/contracts";
+import { fromUSDC, fromE8, fmtUSD, fmtSigned, fmtPrice } from "@/lib/format";
+import { msgOf } from "@/lib/err";
+
+const PRIVY_ENABLED = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
+
+// positions(id) tuple layout from the public mapping getter.
+type PositionTuple = readonly [
+  string, // owner
+  bigint, // margin (1e6)
+  bigint, // notional (1e6)
+  bigint, // entryPrice (1e8)
+  bigint, // openTime
+  bigint, // expiry
+  number, // side
+  boolean, // closed
+];
+
+function Empty({ text }: { text: string }) {
+  return <p className="text-sm text-muted">{text}</p>;
+}
+
+function PositionRow({ id }: { id: bigint }) {
+  const { writeContractAsync } = useWriteContract();
+  const { data: pos } = useReadContract({
+    address: FUTURES_ADDRESS,
+    abi: futuresAbi,
+    functionName: "positions",
+    args: [id],
+    query: { enabled: !!FUTURES_ADDRESS, refetchInterval: 5000 },
+  });
+  const { data: pnl } = useReadContract({
+    address: FUTURES_ADDRESS,
+    abi: futuresAbi,
+    functionName: "markPnl",
+    args: [id],
+    query: { enabled: !!FUTURES_ADDRESS, refetchInterval: 3000 },
+  });
+
+  if (!pos) return null;
+  const p = pos as PositionTuple;
+  if (p[7]) return null; // closed
+
+  const side = Number(p[6]);
+  const isLong = side === 0;
+  const notional = fromUSDC(p[2]);
+  const entry = fromE8(p[3]);
+  const expired = Date.now() / 1000 >= Number(p[5]);
+  const pnlUsd = pnl !== undefined ? fromUSDC(pnl as bigint) : 0;
+
+  async function act() {
+    if (!FUTURES_ADDRESS) return;
+    try {
+      await writeContractAsync({
+        address: FUTURES_ADDRESS,
+        abi: futuresAbi,
+        functionName: expired ? "settle" : "close",
+        args: [id],
+      });
+      toast.success(expired ? "Settled against USDA price" : "Position closed");
+    } catch (e) {
+      toast.error(msgOf(e));
+    }
+  }
+
+  return (
+    <tr className="border-t border-border">
+      <td className={`py-2 font-semibold ${isLong ? "text-up" : "text-down"}`}>
+        {isLong ? "Long" : "Short"}
+      </td>
+      <td className="tabular">{fmtUSD(notional)}</td>
+      <td className="tabular">{fmtPrice(entry)}</td>
+      <td className={`tabular ${pnlUsd >= 0 ? "text-up" : "text-down"}`}>
+        {fmtSigned(pnlUsd)}
+      </td>
+      <td className="text-right">
+        <button
+          onClick={act}
+          className="rounded-md border border-border px-2.5 py-1 text-xs transition hover:bg-surface-2"
+        >
+          {expired ? "Settle" : "Close"}
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+function PositionsInner() {
+  const { address } = useAccount();
+  const { data: ids } = useReadContract({
+    address: FUTURES_ADDRESS,
+    abi: futuresAbi,
+    functionName: "getUserPositions",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address && !!FUTURES_ADDRESS, refetchInterval: 5000 },
+  });
+
+  if (!FUTURES_ADDRESS) return <Empty text="Exchange not deployed yet." />;
+  const list = (ids as bigint[] | undefined) ?? [];
+  if (list.length === 0) return <Empty text="Open a position to see it here." />;
+
+  return (
+    <table className="w-full text-sm">
+      <thead>
+        <tr className="text-left text-xs text-muted">
+          <th className="py-1 font-normal">Side</th>
+          <th className="font-normal">Notional</th>
+          <th className="font-normal">Entry</th>
+          <th className="font-normal">PnL (mark)</th>
+          <th />
+        </tr>
+      </thead>
+      <tbody>
+        {list.map((id) => (
+          <PositionRow key={String(id)} id={id} />
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+export function PositionsList() {
+  if (!PRIVY_ENABLED) return <Empty text="Sign in to view positions." />;
+  return <PositionsInner />;
+}

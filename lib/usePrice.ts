@@ -11,7 +11,9 @@ import { DEFAULT_ANCHOR_USD } from "@shared/constants";
  */
 export function usePrice() {
   const [anchorUsd, setAnchorUsd] = useState(DEFAULT_ANCHOR_USD);
-  const [price, setPrice] = useState(() => markAtUsd(DEFAULT_ANCHOR_USD, Date.now()));
+  // Initialize to the static anchor (not a time-based value) so the server and
+  // client first render match; the effect ticks it to the live mark on mount.
+  const [price, setPrice] = useState(DEFAULT_ANCHOR_USD);
 
   useEffect(() => {
     let alive = true;
