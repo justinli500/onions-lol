@@ -1,44 +1,50 @@
 @import "tailwindcss";
 
 :root {
-  --background: #07080a;
-  --surface: #0e1014;
-  --surface-2: #14171d;
-  --border: #20242c;
-  --foreground: #e8eaed;
-  --muted: #8b919c;
-  --up: #16c784;
-  --down: #ea3943;
-  --onion: #c9a227; /* onion-gold accent */
-  --accent: #a3e635; /* lime CTA */
+  --paper: #f5ead0;
+  --paper-2: #efe1bd;
+  --card: #fbf3df;
+  --red: #a11e21;
+  --red-br: #d8392b;     /* down state / bright accent */
+  --mustard: #f0b42a;
+  --mustard-dp: #b9791a; /* darkened for AA text on cream */
+  --ink: #2a100c;
+  --green: #2f8f4e;
+  --line: rgba(161, 30, 33, 0.14);
+  --bd: rgba(161, 30, 33, 0.85);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-surface: var(--surface);
-  --color-surface-2: var(--surface-2);
-  --color-border: var(--border);
-  --color-foreground: var(--foreground);
-  --color-muted: var(--muted);
-  --color-up: var(--up);
-  --color-down: var(--down);
-  --color-onion: var(--onion);
-  --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-card: var(--card);
+  --color-red: var(--red);
+  --color-red-br: var(--red-br);
+  --color-mustard: var(--mustard);
+  --color-mustard-dp: var(--mustard-dp);
+  --color-ink: var(--ink);
+  --color-green: var(--green);
+  --font-sans: var(--font-archivo);
+  --font-display: var(--font-archivo-black);
+  --font-script: var(--font-yellowtail);
 }
 
-html {
-  color-scheme: dark;
-}
+html { color-scheme: light; }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), system-ui, sans-serif;
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(240,180,42,.18), transparent 30%),
+    radial-gradient(circle at 92% 84%, rgba(161,30,33,.07), transparent 35%);
 }
 
-.tabular {
-  font-variant-numeric: tabular-nums;
-  font-family: var(--font-mono), ui-monospace, monospace;
+.tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+.font-script { font-family: var(--font-script), cursive; }
+.font-display { font-family: var(--font-display), sans-serif; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }
