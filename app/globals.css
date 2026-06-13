@@ -7,9 +7,9 @@
   --red: #a11e21;
   --red-br: #d8392b;     /* down state / bright accent */
   --mustard: #f0b42a;
-  --mustard-dp: #b9791a; /* darkened for AA text on cream */
+  --mustard-dp: #9b6314; /* darkened for AA text on cream (4.53:1 on #fbf3df) */
   --ink: #2a100c;
-  --green: #2f8f4e;
+  --green: #2f7e48; /* darkened for AA text on cream (4.52:1 on #fbf3df) */
   --line: rgba(161, 30, 33, 0.14);
   --bd: rgba(161, 30, 33, 0.85);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);

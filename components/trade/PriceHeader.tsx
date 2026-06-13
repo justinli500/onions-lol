@@ -49,7 +49,7 @@ export function PriceHeader() {
         <span
           className={cn(
             "font-extrabold text-[15px] tabular",
-            up ? "text-green" : "text-red-br",
+            up ? "text-green" : "text-red",
           )}
         >
           <span className="inline-block">{up ? "▲" : "▼"}</span>{" "}

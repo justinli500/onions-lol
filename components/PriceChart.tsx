@@ -151,7 +151,8 @@ export function PriceChart({
       seriesRef.current = s;
     }
 
-    chart.timeScale().fitContent();
+    const len = candles.length;
+    chart.timeScale().setVisibleLogicalRange({ from: Math.max(0, len - 60), to: len - 1 });
 
     const id = setInterval(() => {
       const s = seriesRef.current;
