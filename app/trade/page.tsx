@@ -65,7 +65,7 @@ export default function TradePage() {
       <main className="grid flex-1 gap-3 p-3 lg:grid-cols-[1fr_340px]">
         <div className="flex flex-col gap-3">
           <section className="h-[460px] rounded-xl border border-border bg-surface p-2">
-            <PriceChart anchorUsd={anchorUsd} />
+            <PriceChart anchorUsd={anchorUsd} mode="candles" timeframe="1H" />
           </section>
           <section className="min-h-[200px] rounded-xl border border-border bg-surface p-4">
             <h2 className="mb-3 text-sm font-semibold">Positions</h2>

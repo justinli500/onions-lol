@@ -3,92 +3,204 @@
 import { useEffect, useRef } from "react";
 import {
   createChart,
+  AreaSeries,
   CandlestickSeries,
   ColorType,
   CrosshairMode,
-  type CandlestickData,
+  LineStyle,
+  type IChartApi,
+  type ISeriesApi,
+  type SeriesType,
   type UTCTimestamp,
+  type AreaData,
+  type CandlestickData,
 } from "lightweight-charts";
 import { buildCandles, markAtUsd, type Candle } from "@shared/mark";
-import { CANDLE_INTERVAL_MS } from "@shared/constants";
+import { windowFor, type TimeframeId } from "@/lib/chartWindow";
+import { OnionSeries, type OnionData } from "@/components/trade/onionSeries";
 
-const HISTORY_CANDLES = 120;
+type Mode = "line" | "candles" | "onions";
 
-/**
- * Live candlestick chart of the synthetic onion mark. Initial candles are built
- * client-side from the deterministic mark, then "streamed" by recomputing the
- * current bucket every second and calling series.update — same function the
- * keeper pushes on-chain, so the chart matches contract PnL. v5 API
- * (addSeries(CandlestickSeries)); attribution logo on per Apache-2.0 license.
- */
-export function PriceChart({ anchorUsd }: { anchorUsd: number }) {
+const RED = "#c0271f";
+const GREEN = "#2f8f4e";
+
+export function PriceChart({
+  anchorUsd,
+  mode,
+  timeframe,
+}: {
+  anchorUsd: number;
+  mode: Mode;
+  timeframe: TimeframeId;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  // Holds whichever series is currently active; type varies by mode, narrowed at call sites.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const seriesRef = useRef<ISeriesApi<SeriesType, any> | null>(null);
+  const lastRef = useRef<Candle | undefined>(undefined);
 
+  // Create the chart once on mount; destroy on unmount.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-
     const chart = createChart(el, {
       autoSize: true,
       layout: {
         background: { type: ColorType.Solid, color: "transparent" },
-        textColor: "#8b919c",
-        attributionLogo: true,
+        textColor: "#7a4a1f",
+        attributionLogo: false,
       },
       grid: {
-        vertLines: { color: "rgba(255,255,255,0.04)" },
-        horzLines: { color: "rgba(255,255,255,0.04)" },
+        vertLines: {
+          color: "rgba(161,30,33,0.10)",
+          style: LineStyle.Dashed,
+        },
+        horzLines: {
+          color: "rgba(161,30,33,0.10)",
+          style: LineStyle.Dashed,
+        },
       },
-      crosshair: { mode: CrosshairMode.Normal },
-      rightPriceScale: { borderColor: "#20242c" },
+      crosshair: {
+        mode: CrosshairMode.Normal,
+        vertLine: { color: RED, width: 1 },
+        horzLine: { color: RED, width: 1 },
+      },
+      rightPriceScale: { borderColor: "rgba(161,30,33,0.25)" },
       timeScale: {
-        borderColor: "#20242c",
+        borderColor: "rgba(161,30,33,0.25)",
         timeVisible: true,
         secondsVisible: false,
       },
     });
+    chartRef.current = chart;
+    return () => {
+      chart.remove();
+      chartRef.current = null;
+      seriesRef.current = null;
+    };
+  }, []);
 
-    const series = chart.addSeries(CandlestickSeries, {
-      upColor: "#16c784",
-      downColor: "#ea3943",
-      borderUpColor: "#16c784",
-      borderDownColor: "#ea3943",
-      wickUpColor: "#16c784",
-      wickDownColor: "#ea3943",
-    });
+  // Swap series and restart live-tick whenever mode/timeframe/anchor change.
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart) return;
 
-    const interval = CANDLE_INTERVAL_MS;
-    const alignedNow = Math.floor(Date.now() / interval) * interval;
-    const from = alignedNow - HISTORY_CANDLES * interval;
-    const initial = buildCandles(anchorUsd, from, alignedNow + interval, interval);
-    series.setData(initial as CandlestickData<UTCTimestamp>[]);
+    if (seriesRef.current) {
+      chart.removeSeries(seriesRef.current);
+      seriesRef.current = null;
+    }
+
+    const win = windowFor(timeframe, Date.now());
+    const interval = win.intervalMs;
+    const candles = buildCandles(anchorUsd, win.fromMs, win.toMs, interval);
+    lastRef.current = candles[candles.length - 1];
+
+    if (mode === "line") {
+      const s = chart.addSeries(AreaSeries, {
+        lineColor: RED,
+        lineWidth: 3,
+        topColor: "rgba(240,180,42,0.55)",
+        bottomColor: "rgba(240,180,42,0.0)",
+        priceLineVisible: false,
+        lastValueVisible: true,
+      });
+      s.setData(
+        candles.map(
+          (c): AreaData<UTCTimestamp> => ({
+            time: c.time as UTCTimestamp,
+            value: c.close,
+          }),
+        ),
+      );
+      seriesRef.current = s;
+    } else if (mode === "candles") {
+      const s = chart.addSeries(CandlestickSeries, {
+        upColor: GREEN,
+        downColor: RED,
+        borderUpColor: GREEN,
+        borderDownColor: RED,
+        wickUpColor: GREEN,
+        wickDownColor: RED,
+      });
+      s.setData(
+        candles.map(
+          (c): CandlestickData<UTCTimestamp> => ({
+            time: c.time as UTCTimestamp,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+          }),
+        ),
+      );
+      seriesRef.current = s;
+    } else {
+      const s = chart.addCustomSeries(new OnionSeries(), {});
+      s.setData(
+        candles.map(
+          (c): OnionData => ({
+            time: c.time as UTCTimestamp,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+          }),
+        ),
+      );
+      seriesRef.current = s;
+    }
+
     chart.timeScale().fitContent();
 
-    let last: Candle | undefined = initial[initial.length - 1];
-    const tick = () => {
+    const id = setInterval(() => {
+      const s = seriesRef.current;
+      if (!s) return;
       const now = Date.now();
       const v = markAtUsd(anchorUsd, now);
-      const bucket = ((Math.floor(now / interval) * interval) / 1000) as number;
-      if (!last || bucket > last.time) {
-        last = { time: bucket, open: v, high: v, low: v, close: v };
-      } else {
-        last = {
-          time: last.time,
-          open: last.open,
-          high: Math.max(last.high, v),
-          low: Math.min(last.low, v),
-          close: v,
-        };
-      }
-      series.update(last as CandlestickData<UTCTimestamp>);
-    };
-    const id = setInterval(tick, 1000);
+      const bucket = (Math.floor(now / interval) * interval) / 1000;
+      const prev = lastRef.current;
+      const next: Candle =
+        !prev || bucket > prev.time
+          ? { time: bucket, open: v, high: v, low: v, close: v }
+          : {
+              time: prev.time,
+              open: prev.open,
+              high: Math.max(prev.high, v),
+              low: Math.min(prev.low, v),
+              close: v,
+            };
+      lastRef.current = next;
 
-    return () => {
-      clearInterval(id);
-      chart.remove();
-    };
-  }, [anchorUsd]);
+      if (mode === "line") {
+        // Narrow cast: s is ISeriesApi<"Area"> in this branch
+        (s as ISeriesApi<"Area">).update({
+          time: next.time as UTCTimestamp,
+          value: next.close,
+        });
+      } else if (mode === "candles") {
+        // Narrow cast: s is ISeriesApi<"Candlestick"> in this branch
+        (s as ISeriesApi<"Candlestick">).update({
+          time: next.time as UTCTimestamp,
+          open: next.open,
+          high: next.high,
+          low: next.low,
+          close: next.close,
+        });
+      } else {
+        // Narrow cast: s is ISeriesApi<"Custom",...,OnionData,...> in this branch
+        (s as ISeriesApi<"Custom", UTCTimestamp, OnionData>).update({
+          time: next.time as UTCTimestamp,
+          open: next.open,
+          high: next.high,
+          low: next.low,
+          close: next.close,
+        });
+      }
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [anchorUsd, mode, timeframe]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
