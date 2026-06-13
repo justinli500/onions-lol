@@ -76,6 +76,17 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
     if (!VAULT_ADDRESS) return toast.error("Vault not deployed yet");
     setBusy(true);
     try {
+      // ensure the embedded wallet has gas for approve/deposit/open/close
+      const gasToken = await getAccessToken().catch(() => null);
+      await fetch("/api/faucet", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(gasToken ? { Authorization: `Bearer ${gasToken}` } : {}),
+        },
+        body: JSON.stringify({ address: addr }),
+      }).catch(() => {});
+
       const before = await readUsdc();
       const value = parseUnits(String(amount), 6);
 
