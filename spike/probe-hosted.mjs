@@ -14,6 +14,12 @@ async function probe(encoding) {
   const url = hostedUrl(signed) + (process.env.ONE_TAP ? "&enableFullWidget=false" : "");
   const browser = await chromium.launch({ channel: 'chrome', headless: true });
   const page = await browser.newPage();
+  page.on('request', (req) => {
+    const u = req.url();
+    if (u.includes('/v1/manual-transfers') && req.method() === 'POST') {
+      console.log('REQ', u.split('blink.cash')[1], 'BODY:', (req.postData() || '').slice(0, 400));
+    }
+  });
   const api = [];
   page.on('response', async (res) => {
     const u = res.url();
@@ -21,6 +27,12 @@ async function probe(encoding) {
       let body = '';
       try { body = (await res.text()).slice(0, 2500); } catch {}
       api.push({ status: res.status(), method: res.request().method(), url: u, body });
+      if (/\/v1\/manual-transfers(\?|$)/.test(u) && res.request().method() === 'POST') {
+        const rb = res.request().postData() || '';
+        const src = rb.match(/"source"\s*:\s*\{[^}]*\}/)?.[0] ?? rb.match(/"sourceToken[^,}]*/)?.[0] ?? '(no source field — full body below)';
+        console.log(`PAIR status=${res.status()} ${src}`);
+        if (src.startsWith('(no')) console.log('  full req body:', rb.slice(0, 700));
+      }
     }
   });
   const consoleErrs = [];
