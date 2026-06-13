@@ -25,6 +25,8 @@
   --color-mustard-dp: var(--mustard-dp);
   --color-ink: var(--ink);
   --color-green: var(--green);
+  --color-line: var(--line);
+  --color-bd: var(--bd);
   --font-sans: var(--font-archivo);
   --font-display: var(--font-archivo-black);
   --font-script: var(--font-yellowtail);
