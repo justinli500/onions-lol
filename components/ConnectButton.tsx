@@ -16,13 +16,13 @@ function ConnectButtonInner() {
   const addr = wallets[0]?.address;
 
   if (!ready) {
-    return <div className="h-9 w-28 animate-pulse rounded-lg bg-surface-2" />;
+    return <div className="h-9 w-28 animate-pulse rounded-full bg-card border-2 border-red" />;
   }
   if (!authenticated) {
     return (
       <button
         onClick={login}
-        className="h-9 rounded-lg bg-accent px-4 text-sm font-semibold text-black transition hover:brightness-110 active:scale-95"
+        className="border-2 border-red bg-mustard text-red font-extrabold text-sm px-[18px] py-2 rounded-full active:scale-[0.96] transition-transform"
       >
         Sign in
       </button>
@@ -31,7 +31,7 @@ function ConnectButtonInner() {
   return (
     <button
       onClick={logout}
-      className="tabular h-9 rounded-lg border border-border bg-surface px-3 text-sm text-foreground transition hover:bg-surface-2"
+      className="bg-card text-red border-2 border-red font-extrabold text-sm px-[18px] py-2 rounded-full active:scale-[0.96] transition-transform tabular"
       title={user?.email?.address ?? addr}
     >
       {short(addr) || "Connected"}
@@ -45,7 +45,7 @@ export function ConnectButton() {
       <button
         disabled
         title="Set NEXT_PUBLIC_PRIVY_APP_ID to enable sign-in"
-        className="h-9 cursor-not-allowed rounded-lg border border-border bg-surface px-4 text-sm font-medium text-muted"
+        className="bg-card text-red border-2 border-red font-extrabold text-sm px-[18px] py-2 rounded-full cursor-not-allowed opacity-50"
       >
         Sign in
       </button>
