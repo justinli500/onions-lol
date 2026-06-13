@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { usePrice } from "@/lib/usePrice";
+import { useMarketPrice } from "@/lib/useMarketPrice";
 import { fmtUSD } from "@/lib/format";
 import { useDemo } from "@/lib/demo";
 import { OrderTicket, type Expiry } from "@/components/trade/OrderTicket";
@@ -14,7 +14,7 @@ const EXPIRIES: Expiry[] = [
 ];
 
 export function DemoTradePanel() {
-  const { price } = usePrice();
+  const price = useMarketPrice();
   const { collateral, openPosition } = useDemo();
   const [side, setSide] = useState<0 | 1>(0);
   const [margin, setMargin] = useState(50);

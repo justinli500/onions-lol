@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
 import { usePrice } from "@/lib/usePrice";
 import { Nav } from "@/components/trade/Nav";
 import { Marquee } from "@/components/trade/Marquee";
 import { PriceHeader } from "@/components/trade/PriceHeader";
 import { ChartToolbar } from "@/components/trade/ChartToolbar";
 import type { TimeframeId } from "@/lib/chartWindow";
+import { DEMO_MODE } from "@/lib/demo";
+import { MARKETS } from "@/lib/markets";
 
 const PriceChart = dynamic(() => import("@/components/PriceChart").then((m) => m.PriceChart), {
   ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-[14px] bg-paper-2" />,
@@ -17,10 +20,17 @@ const PositionsList = dynamic(() => import("@/components/PositionsList").then((m
 
 type Mode = "line" | "candles" | "onions";
 
-export default function TradePage() {
-  const { anchorUsd } = usePrice();
+function TradePageInner() {
+  const { anchorUsd: realAnchor } = usePrice();
+  const params = useSearchParams();
   const [mode, setMode] = useState<Mode>("line");
   const [timeframe, setTimeframe] = useState<TimeframeId>("1D");
+
+  // Demo-only: /trade?m=<id> picks one of the demo markets to display.
+  const market = DEMO_MODE
+    ? MARKETS.find((m) => m.id === params.get("m")) ?? MARKETS[0]
+    : undefined;
+  const anchorUsd = market ? market.price : realAnchor;
 
   return (
     <div className="w-full max-w-[1320px] mx-auto px-[26px] pt-[18px] pb-[50px]">
@@ -28,7 +38,7 @@ export default function TradePage() {
       <Marquee />
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-[22px] items-start">
         <div>
-          <PriceHeader />
+          <PriceHeader market={market} />
           <div className="mt-4 rounded-[18px] border-[2.5px] border-red bg-card px-3.5 pt-3.5 pb-2 relative">
             <ChartToolbar mode={mode} onMode={setMode} timeframe={timeframe} onTimeframe={setTimeframe} />
             <div className="h-[312px]"><PriceChart anchorUsd={anchorUsd} mode={mode} timeframe={timeframe} /></div>
@@ -41,5 +51,13 @@ export default function TradePage() {
         <TradePanel />
       </div>
     </div>
+  );
+}
+
+export default function TradePage() {
+  return (
+    <Suspense fallback={null}>
+      <TradePageInner />
+    </Suspense>
   );
 }

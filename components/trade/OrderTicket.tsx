@@ -47,6 +47,11 @@ export function OrderTicket({
 }: OrderTicketProps) {
   const isLong = side === 0;
   const notional = margin * lev;
+  // PnL is capped at ±margin, so liquidation is the price where loss = margin:
+  // long liquidates below entry, short above, by 1/leverage.
+  const liqPrice = isLong ? price * (1 - 1 / lev) : price * (1 + 1 / lev);
+  const exceeds = margin > collateral;
+  const invalid = margin <= 0 || exceeds;
 
   return (
     <div className="rounded-[18px] border-[2.5px] border-red bg-card overflow-hidden">
@@ -154,6 +159,7 @@ export function OrderTicket({
         <div className="rounded-[10px] border border-line bg-paper px-3 py-2">
           <Row k="Entry (mark)" v={fmtPrice(price)} />
           <Row k="Notional" v={fmtUSD(notional)} />
+          <Row k="Est. liq price" v={fmtPrice(liqPrice)} />
           <Row k="Max loss" v={fmtUSD(margin)} />
           <div className="flex items-baseline justify-between gap-2 pt-[5px] border-t border-dashed border-line mt-[5px]">
             <span className="text-xs text-mustard-dp">Settles against</span>
@@ -162,17 +168,24 @@ export function OrderTicket({
         </div>
 
         {/* CTA */}
-        <motion.button
-          onClick={onSubmit}
-          disabled={busy || margin <= 0}
-          whileTap={{ scale: 0.985 }}
-          className={cn(
-            "font-display text-base py-[15px] rounded-[12px] text-white transition disabled:opacity-50",
-            isLong ? "bg-green" : "bg-red"
+        <div>
+          <motion.button
+            onClick={onSubmit}
+            disabled={busy || invalid}
+            whileTap={{ scale: 0.985 }}
+            className={cn(
+              "w-full font-display text-base py-[15px] rounded-[12px] text-white transition disabled:opacity-50",
+              isLong ? "bg-green" : "bg-red"
+            )}
+          >
+            {busy ? "Opening…" : isLong ? "OPEN LONG" : "OPEN SHORT"}
+          </motion.button>
+          {exceeds && (
+            <p className="mt-1.5 text-center text-xs font-semibold text-red">
+              Margin exceeds available collateral
+            </p>
           )}
-        >
-          {busy ? "Opening…" : isLong ? "OPEN LONG" : "OPEN SHORT"}
-        </motion.button>
+        </div>
       </div>
     </div>
   );
