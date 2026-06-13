@@ -56,6 +56,7 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
   const { requestDeposit, status } = useBlinkDeposit({
     signer,
     environment: BLINK_ENV,
+    preload: false, // don't load Blink's iframe until the user taps Deposit
   });
   const [amount, setAmount] = useState(25);
   const [busy, setBusy] = useState(false);

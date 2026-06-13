@@ -7,16 +7,18 @@ import ERC20Abi from "@/abi/ERC20.json";
 
 export const CHAIN = baseSepolia;
 
-const env = (k: string) => process.env[k] as `0x${string}` | undefined;
+// NEXT_PUBLIC_* must be read with STATIC literal keys so Next inlines them into
+// the client bundle (a dynamic process.env[k] would be undefined in the browser).
+const undef = (v?: string) => (v && v.length ? (v as `0x${string}`) : undefined);
 
 // Phase-1 confirmed Base Sepolia USDC (Blink's sandbox delivers this token).
 export const USDC_ADDRESS =
   (process.env.NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`) ??
   "0x036CbD53842c5426634e7929541eC2318f3dCF7e";
 
-export const ORACLE_ADDRESS = env("NEXT_PUBLIC_ORACLE_ADDRESS");
-export const VAULT_ADDRESS = env("NEXT_PUBLIC_VAULT_ADDRESS");
-export const FUTURES_ADDRESS = env("NEXT_PUBLIC_FUTURES_ADDRESS");
+export const ORACLE_ADDRESS = undef(process.env.NEXT_PUBLIC_ORACLE_ADDRESS);
+export const VAULT_ADDRESS = undef(process.env.NEXT_PUBLIC_VAULT_ADDRESS);
+export const FUTURES_ADDRESS = undef(process.env.NEXT_PUBLIC_FUTURES_ADDRESS);
 
 export const oracleAbi = OnionOracleAbi as Abi;
 export const vaultAbi = VaultAbi as Abi;
