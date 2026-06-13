@@ -1,87 +1,45 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import dynamic from "next/dynamic";
 import { usePrice } from "@/lib/usePrice";
-import { fmtPrice } from "@/lib/format";
+import { Nav } from "@/components/trade/Nav";
+import { Marquee } from "@/components/trade/Marquee";
+import { PriceHeader } from "@/components/trade/PriceHeader";
+import { ChartToolbar } from "@/components/trade/ChartToolbar";
+import type { TimeframeId } from "@/lib/chartWindow";
 
-// Wallet + canvas UI are client-only (Privy state / DOM); keep them out of SSG.
-const ConnectButton = dynamic(
-  () => import("@/components/ConnectButton").then((m) => m.ConnectButton),
-  { ssr: false },
-);
-const PriceChart = dynamic(
-  () => import("@/components/PriceChart").then((m) => m.PriceChart),
-  { ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-lg bg-surface-2" /> },
-);
-const TradePanel = dynamic(
-  () => import("@/components/TradePanel").then((m) => m.TradePanel),
-  { ssr: false },
-);
-const PositionsList = dynamic(
-  () => import("@/components/PositionsList").then((m) => m.PositionsList),
-  { ssr: false },
-);
+const PriceChart = dynamic(() => import("@/components/PriceChart").then((m) => m.PriceChart), {
+  ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-[14px] bg-paper-2" />,
+});
+const TradePanel = dynamic(() => import("@/components/TradePanel").then((m) => m.TradePanel), { ssr: false });
+const PositionsList = dynamic(() => import("@/components/PositionsList").then((m) => m.PositionsList), { ssr: false });
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: string }) {
-  return (
-    <div className="flex flex-col">
-      <span className="text-[11px] uppercase tracking-wide text-muted">{label}</span>
-      <span className={`tabular text-sm font-semibold ${accent ?? "text-foreground"}`}>{value}</span>
-    </div>
-  );
-}
+type Mode = "line" | "candles" | "onions";
 
 export default function TradePage() {
-  const { price, changePct, anchorUsd } = usePrice();
-  const up = changePct >= 0;
+  const { anchorUsd } = usePrice();
+  const [mode, setMode] = useState<Mode>("line");
+  const [timeframe, setTimeframe] = useState<TimeframeId>("1D");
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-3">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="text-base font-bold tracking-tight">
-            onions<span className="text-onion">.lol</span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-onion/15 text-sm">🧅</span>
-              <div className="flex flex-col">
-                <span className="text-xs font-semibold leading-none">ONION</span>
-                <span className="text-[10px] leading-none text-muted">Base Sepolia</span>
-              </div>
-            </div>
-            <Stat label="Price" value={fmtPrice(price)} />
-            <Stat
-              label="Today"
-              value={`${up ? "+" : ""}${changePct.toFixed(2)}%`}
-              accent={up ? "text-up" : "text-down"}
-            />
+    <div className="max-w-[1320px] mx-auto px-[26px] pt-[18px] pb-[50px]">
+      <Nav />
+      <Marquee />
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-[22px] items-start">
+        <div>
+          <PriceHeader />
+          <div className="mt-4 rounded-[18px] border-[2.5px] border-red bg-card px-3.5 pt-3.5 pb-2 relative">
+            <ChartToolbar mode={mode} onMode={setMode} timeframe={timeframe} onTimeframe={setTimeframe} />
+            <div className="h-[312px]"><PriceChart anchorUsd={anchorUsd} mode={mode} timeframe={timeframe} /></div>
+          </div>
+          <div className="mt-4 rounded-[18px] border-[2.5px] border-red bg-card p-4">
+            <h2 className="font-display text-sm text-red mb-3">POSITIONS</h2>
+            <PositionsList />
           </div>
         </div>
-        <ConnectButton />
-      </header>
-
-      <main className="grid flex-1 gap-3 p-3 lg:grid-cols-[1fr_340px]">
-        <div className="flex flex-col gap-3">
-          <section className="h-[460px] rounded-xl border border-border bg-surface p-2">
-            <PriceChart anchorUsd={anchorUsd} mode="candles" timeframe="1H" />
-          </section>
-          <section className="min-h-[200px] rounded-xl border border-border bg-surface p-4">
-            <h2 className="mb-3 text-sm font-semibold">Positions</h2>
-            <PositionsList />
-          </section>
-        </div>
-        <aside className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
-          <h2 className="text-sm font-semibold">Trade</h2>
-          <TradePanel />
-        </aside>
-      </main>
-
-      <footer className="border-t border-border px-5 py-2.5 text-center text-[11px] text-muted">
-        Intraday prices are simulated for the demo; contracts settle against
-        official USDA onion prices.
-      </footer>
+        <TradePanel />
+      </div>
     </div>
   );
 }
