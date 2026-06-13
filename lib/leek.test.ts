@@ -23,4 +23,11 @@ describe("leekGeometry", () => {
     expect(g.bulb.cx).toBe(50);
     expect(g.bulb.cy).toBeCloseTo(y(10));
   });
+  it("down bar: not up, body swaps so stalk top=close-y, bottom=open-y", () => {
+    const down = leekGeometry({ open: 12, high: 14, low: 8, close: 10 }, 50, 20, y);
+    expect(down.up).toBe(false);
+    expect(down.stalk.yTop).toBeCloseTo(y(12));    // max(open,close) -> top
+    expect(down.stalk.yBottom).toBeCloseTo(y(10)); // min(open,close) -> bottom
+    expect(down.bulb.cy).toBeCloseTo(y(10));
+  });
 });
