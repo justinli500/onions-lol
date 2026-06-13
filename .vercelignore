@@ -1,0 +1,6 @@
+# Only the Next.js app is deployed to Vercel.
+contracts
+oracle
+spike
+.env
+.env.*
