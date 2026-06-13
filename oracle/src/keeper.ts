@@ -32,6 +32,23 @@ const pub = createPublicClient({ chain: baseSepolia, transport: http(RPC) });
 const oracle = oracleAbi as Abi;
 const futures = futuresAbi as Abi;
 
+// Serialize all txns and manage the nonce explicitly so back-to-back sends
+// (e.g. setAnchor then setMark at startup) don't collide on the same nonce.
+let nonce = 0;
+let txChain: Promise<void> = Promise.resolve();
+function send(functionName: string, args: readonly unknown[]): Promise<void> {
+  txChain = txChain.then(async () => {
+    try {
+      await wallet.writeContract({ address: ORACLE!, abi: oracle, functionName, args, nonce });
+      nonce++;
+    } catch (e) {
+      nonce = await pub.getTransactionCount({ address: account.address, blockTag: "pending" });
+      console.error(`[tx] ${functionName} failed:`, (e as Error).message.split("\n")[0]);
+    }
+  });
+  return txChain;
+}
+
 let anchorUsd = DEFAULT_ANCHOR_USD;
 let anchorE8 = Math.round(anchorUsd * PRICE_SCALE);
 const settledExpiries = new Set<string>();
@@ -41,28 +58,14 @@ async function refreshAnchor() {
   if (real != null) anchorUsd = real; // else carry-forward
   anchorE8 = Math.round(anchorUsd * PRICE_SCALE);
   const effectiveTs = Math.floor(dayStartMs(Date.now()) / 1000);
-  await wallet.writeContract({
-    address: ORACLE!,
-    abi: oracle,
-    functionName: "setAnchor",
-    args: [BigInt(anchorE8), BigInt(effectiveTs)],
-  });
+  await send("setAnchor", [BigInt(anchorE8), BigInt(effectiveTs)]);
   console.log(`[anchor] $${anchorUsd.toFixed(2)} (real USDA: ${real != null})`);
 }
 
 async function pushMark() {
   const now = Date.now();
   const mark = markAtE8(anchorE8, now);
-  try {
-    await wallet.writeContract({
-      address: ORACLE!,
-      abi: oracle,
-      functionName: "setMark",
-      args: [BigInt(mark), BigInt(Math.floor(now / 1000))],
-    });
-  } catch (e) {
-    console.error("[mark] push failed:", (e as Error).message);
-  }
+  await send("setMark", [BigInt(mark), BigInt(Math.floor(now / 1000))]);
 }
 
 // Settle expired positions against the current anchor so users can claim.
@@ -97,12 +100,7 @@ async function settleDue() {
         settledExpiries.add(key);
         continue;
       }
-      await wallet.writeContract({
-        address: ORACLE!,
-        abi: oracle,
-        functionName: "setSettlement",
-        args: [expiry, BigInt(anchorE8)],
-      });
+      await send("setSettlement", [expiry, BigInt(anchorE8)]);
       settledExpiries.add(key);
       console.log(`[settle] expiry ${key} -> $${anchorUsd.toFixed(2)}`);
     }
@@ -113,6 +111,7 @@ async function settleDue() {
 
 async function main() {
   console.log(`keeper up · oracle ${ORACLE} · keeper ${account.address}`);
+  nonce = await pub.getTransactionCount({ address: account.address, blockTag: "pending" });
   await refreshAnchor();
   await pushMark();
   setInterval(pushMark, TICK_MS);
