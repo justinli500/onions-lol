@@ -32,15 +32,19 @@
   --font-script: var(--font-yellowtail);
 }
 
-html { color-scheme: light; }
+html { color-scheme: light; background: var(--paper); }
 
 body {
-  background: var(--paper);
+  background-color: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans), system-ui, sans-serif;
+  /* Full-viewport warm wash, anchored to the screen so it never cuts off where
+     the content ends (fixed attachment covers the whole viewport). */
   background-image:
-    radial-gradient(circle at 12% 8%, rgba(240,180,42,.18), transparent 30%),
-    radial-gradient(circle at 92% 84%, rgba(161,30,33,.07), transparent 35%);
+    radial-gradient(125% 120% at 8% -5%, rgba(240, 180, 42, 0.18), transparent 55%),
+    radial-gradient(120% 120% at 100% 105%, rgba(161, 30, 33, 0.08), transparent 55%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
 }
 
 .tabular { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
