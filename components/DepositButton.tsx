@@ -164,33 +164,34 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
         disabled={loading}
         className="h-11 rounded-xl bg-accent font-semibold text-black transition hover:brightness-110 active:scale-95 disabled:opacity-60"
       >
-        {loading ? "Depositing…" : "Deposit with Blink"}
+        {loading ? "Working…" : "Deposit with Blink"}
       </button>
 
-      {/* Fallback path — Blink sandbox routing is currently flaky */}
-      {addr && (
-        <details className="rounded-lg border border-border bg-surface-2 p-3 text-xs text-muted">
-          <summary className="cursor-pointer select-none">
-            Blink stuck? Deposit directly instead
-          </summary>
-          <div className="mt-2 flex flex-col gap-2">
-            <p>
-              Send Base Sepolia USDC to your embedded wallet, then credit it:
-            </p>
-            <code className="break-all rounded bg-background px-2 py-1 text-[11px] text-foreground">
-              {addr}
-            </code>
-            <p>In wallet now: {fmtUSD(walletUsdc)}</p>
-            <button
-              onClick={onCreditExisting}
-              disabled={busy || walletUsdc <= 0}
-              className="h-9 rounded-lg border border-border bg-surface font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-50"
-            >
-              {busy ? "Crediting…" : `Credit ${fmtUSD(walletUsdc)} to collateral`}
-            </button>
-          </div>
-        </details>
-      )}
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide text-muted">
+        <span className="h-px flex-1 bg-border" />
+        or deposit USDC you already hold
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface-2 p-3 text-xs">
+        <div className="flex justify-between">
+          <span className="text-muted">In your wallet</span>
+          <span className="tabular text-foreground">{fmtUSD(walletUsdc)}</span>
+        </div>
+        <button
+          onClick={onCreditExisting}
+          disabled={busy || walletUsdc <= 0}
+          className="h-10 rounded-lg bg-foreground font-semibold text-background transition hover:opacity-90 active:scale-95 disabled:opacity-40"
+        >
+          {busy ? "Depositing…" : walletUsdc > 0 ? `Deposit ${fmtUSD(walletUsdc)}` : "No USDC in wallet yet"}
+        </button>
+        {addr && (
+          <p className="text-muted">
+            Your wallet: <code className="break-all text-[11px] text-foreground">{addr}</code>
+            {walletUsdc <= 0 ? " — send Base Sepolia USDC here, then deposit." : ""}
+          </p>
+        )}
+      </div>
     </div>
   );
 }
