@@ -186,48 +186,49 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <label className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3">
-        <span className="text-sm text-muted">$</span>
-        <input
-          type="number"
-          min={1}
-          value={amount}
-          onChange={(e) => setAmount(Math.max(1, Number(e.target.value) || 0))}
-          className="tabular w-full bg-transparent py-2 text-sm outline-none"
-        />
-      </label>
+      {/* PRIMARY: one-click deposit of USDC already in your wallet */}
+      <div className="flex justify-between text-xs">
+        <span className="text-muted">In your wallet</span>
+        <span className="tabular text-foreground">{fmtUSD(walletUsdc)}</span>
+      </div>
       <button
-        onClick={onDepositBlink}
-        disabled={loading}
-        className="h-11 rounded-xl bg-accent font-semibold text-black transition hover:brightness-110 active:scale-95 disabled:opacity-60"
+        onClick={onCreditExisting}
+        disabled={busy || walletUsdc <= 0}
+        className="h-11 rounded-xl bg-accent font-semibold text-black transition hover:brightness-110 active:scale-95 disabled:opacity-50"
       >
-        {loading ? "Working…" : "Deposit with Blink"}
+        {busy ? "Depositing…" : walletUsdc > 0 ? `Deposit ${fmtUSD(walletUsdc)}` : "No USDC in wallet yet"}
       </button>
+      {addr && walletUsdc <= 0 && (
+        <p className="text-xs text-muted">
+          Send Base Sepolia USDC to{" "}
+          <code className="break-all text-[11px] text-foreground">{addr}</code>, then deposit.
+        </p>
+      )}
 
+      {/* SECONDARY: Blink one-tap (showcased; testnet routing flaky — pay with USDC) */}
       <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide text-muted">
         <span className="h-px flex-1 bg-border" />
-        or deposit USDC you already hold
+        or pay with Blink
         <span className="h-px flex-1 bg-border" />
       </div>
-
-      <div className="flex flex-col gap-2 rounded-lg border border-border bg-surface-2 p-3 text-xs">
-        <div className="flex justify-between">
-          <span className="text-muted">In your wallet</span>
-          <span className="tabular text-foreground">{fmtUSD(walletUsdc)}</span>
-        </div>
+      <div className="flex items-center gap-2">
+        <label className="flex flex-1 items-center gap-1 rounded-lg border border-border bg-surface-2 px-3">
+          <span className="text-sm text-muted">$</span>
+          <input
+            type="number"
+            min={1}
+            value={amount}
+            onChange={(e) => setAmount(Math.max(1, Number(e.target.value) || 0))}
+            className="tabular w-full bg-transparent py-2 text-sm outline-none"
+          />
+        </label>
         <button
-          onClick={onCreditExisting}
-          disabled={busy || walletUsdc <= 0}
-          className="h-10 rounded-lg bg-foreground font-semibold text-background transition hover:opacity-90 active:scale-95 disabled:opacity-40"
+          onClick={onDepositBlink}
+          disabled={loading}
+          className="h-10 shrink-0 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-50"
         >
-          {busy ? "Depositing…" : walletUsdc > 0 ? `Deposit ${fmtUSD(walletUsdc)}` : "No USDC in wallet yet"}
+          {loading ? "Working…" : "Pay with Blink"}
         </button>
-        {addr && (
-          <p className="text-muted">
-            Your wallet: <code className="break-all text-[11px] text-foreground">{addr}</code>
-            {walletUsdc <= 0 ? " — send Base Sepolia USDC here, then deposit." : ""}
-          </p>
-        )}
       </div>
     </div>
   );
@@ -241,7 +242,7 @@ export function DepositButton(props: { onDeposited?: () => void }) {
         title="Set NEXT_PUBLIC_PRIVY_APP_ID to enable deposits"
         className="h-11 w-full cursor-not-allowed rounded-xl border border-border bg-surface text-sm font-medium text-muted"
       >
-        Deposit with Blink
+        Deposit
       </button>
     );
   }
