@@ -6,11 +6,23 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { baseSepolia } from "viem/chains";
 import { Toaster } from "sonner";
 import { wagmiConfig } from "@/lib/wagmi";
+import { DEMO_MODE, DemoProvider } from "@/lib/demo";
 
 const queryClient = new QueryClient();
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "";
+
+  // Demo mode: bypass Privy + wagmi entirely and run on mocked in-memory state
+  // so the full trading UI is interactive with no wallet or deployed backend.
+  if (DEMO_MODE) {
+    return (
+      <DemoProvider>
+        {children}
+        <Toaster theme="light" position="bottom-right" richColors />
+      </DemoProvider>
+    );
+  }
 
   // Dev fallback: without an app id, run the app sans wallet so the landing page
   // and chart still work (wallet/deposit features need NEXT_PUBLIC_PRIVY_APP_ID).

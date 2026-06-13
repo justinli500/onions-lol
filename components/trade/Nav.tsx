@@ -6,7 +6,7 @@ const tab = "font-bold text-[13px] px-2 py-1.5 rounded-full transition-colors sm
 const active = "text-paper bg-red";
 const idle = "text-red hover:bg-red/[0.08]";
 
-export function Nav({ active: activeTab = "trade" }: { active?: "trade" | "about" }) {
+export function Nav({ active: activeTab = "trade" }: { active?: "trade" | "markets" | "about" }) {
   return (
     <nav className="flex items-center justify-between gap-1.5 rounded-full border-2 border-red bg-card pl-2.5 pr-1.5 py-2 sm:gap-3.5 sm:pl-[18px] sm:pr-2.5">
       <Link href="/" className="flex items-baseline gap-0.5 font-extrabold text-[15px] text-red tracking-tight sm:text-[20px]">
@@ -16,6 +16,7 @@ export function Nav({ active: activeTab = "trade" }: { active?: "trade" | "about
       </Link>
       <div className="flex gap-1">
         <Link href="/trade" className={cn(tab, activeTab === "trade" ? active : idle)}>Trade</Link>
+        <Link href="/markets" className={cn(tab, activeTab === "markets" ? active : idle)}>Markets</Link>
         <Link href="/" className={cn(tab, activeTab === "about" ? active : idle)}>About</Link>
       </div>
       <ConnectButton />

@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { FUTURES_ADDRESS, futuresAbi } from "@/lib/contracts";
 import { fromUSDC, fromE8, fmtUSD, fmtSigned, fmtPrice } from "@/lib/format";
 import { msgOf } from "@/lib/err";
+import { DEMO_MODE } from "@/lib/demo";
+import { DemoPositions } from "@/components/trade/DemoPositions";
 
 const PRIVY_ENABLED = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
@@ -131,6 +133,7 @@ function PositionsInner() {
 }
 
 export function PositionsList() {
+  if (DEMO_MODE) return <DemoPositions />;
   if (!PRIVY_ENABLED) return <Empty text="Sign in to view positions." />;
   return <PositionsInner />;
 }
