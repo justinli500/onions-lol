@@ -25,17 +25,21 @@ export function Marquee({ fullBleed = false }: { fullBleed?: boolean }) {
   return (
     <div
       className={cn(
-        "relative h-10 overflow-hidden bg-red",
+        "group relative h-10 overflow-hidden bg-red",
         fullBleed
           ? "border-y-2 border-red"
           : "my-3.5 rounded-[14px] border-2 border-red",
       )}
     >
       {/* track is absolutely positioned so its max-content width can't blow out the page on mobile */}
-      <div className="absolute inset-y-0 left-0 flex w-max items-center marquee-track">
+      <div className="absolute inset-y-0 left-0 flex w-max items-center marquee-track group-hover:[animation-play-state:paused]">
         {run}
         {run}
       </div>
+      {/* edge fades: red melts into red so the text dissolves at the band's edges
+          instead of hard-cutting — the band colour itself stays continuous. */}
+      <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-red to-transparent" />
+      <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-red to-transparent" />
     </div>
   );
 }

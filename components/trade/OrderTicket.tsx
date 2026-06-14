@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { fmtPrice, fmtUSD } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { SPRING_SNAPPY, tapScale } from "@/lib/animations";
 
 export interface Expiry {
   label: string;
@@ -117,20 +118,29 @@ export function OrderTicket({
             <span className="tabular text-ink">{lev}×</span>
           </div>
           <div className="grid grid-cols-4 gap-1">
-            {LEVERAGE_PILLS.map((v) => (
-              <button
-                key={v}
-                onClick={() => onLev(v)}
-                className={cn(
-                  "rounded-[8px] border py-[7px] text-xs font-semibold transition",
-                  lev === v
-                    ? "border-mustard bg-mustard text-ink"
-                    : "border-line text-ink/60 hover:border-mustard-dp hover:text-ink"
-                )}
-              >
-                {v}×
-              </button>
-            ))}
+            {LEVERAGE_PILLS.map((v) => {
+              const on = lev === v;
+              return (
+                <motion.button
+                  key={v}
+                  onClick={() => onLev(v)}
+                  whileTap={tapScale}
+                  className={cn(
+                    "relative isolate rounded-lg border py-[7px] text-xs font-semibold transition-colors",
+                    on ? "border-mustard text-ink" : "border-line text-ink/60 hover:border-mustard-dp hover:text-ink"
+                  )}
+                >
+                  {on && (
+                    <motion.span
+                      layoutId="lev-ind"
+                      transition={SPRING_SNAPPY}
+                      className="absolute inset-0 -z-10 rounded-lg bg-mustard"
+                    />
+                  )}
+                  {v}×
+                </motion.button>
+              );
+            })}
           </div>
         </div>
 
@@ -138,20 +148,29 @@ export function OrderTicket({
         <div>
           <div className="mb-1 text-xs text-ink/60">Expiry</div>
           <div className="grid grid-cols-3 gap-1">
-            {expiries.map((e, i) => (
-              <button
-                key={e.label}
-                onClick={() => onExpIdx(i)}
-                className={cn(
-                  "rounded-[8px] border py-[7px] text-xs font-semibold transition",
-                  i === expIdx
-                    ? "border-mustard bg-mustard text-ink"
-                    : "border-line text-ink/60 hover:border-mustard-dp hover:text-ink"
-                )}
-              >
-                {e.label}
-              </button>
-            ))}
+            {expiries.map((e, i) => {
+              const on = i === expIdx;
+              return (
+                <motion.button
+                  key={e.label}
+                  onClick={() => onExpIdx(i)}
+                  whileTap={tapScale}
+                  className={cn(
+                    "relative isolate rounded-lg border py-[7px] text-xs font-semibold transition-colors",
+                    on ? "border-mustard text-ink" : "border-line text-ink/60 hover:border-mustard-dp hover:text-ink"
+                  )}
+                >
+                  {on && (
+                    <motion.span
+                      layoutId="exp-ind"
+                      transition={SPRING_SNAPPY}
+                      className="absolute inset-0 -z-10 rounded-lg bg-mustard"
+                    />
+                  )}
+                  {e.label}
+                </motion.button>
+              );
+            })}
           </div>
         </div>
 

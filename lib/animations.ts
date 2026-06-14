@@ -1,0 +1,47 @@
+import type { Transition, Variants } from "motion/react";
+
+/**
+ * Shared motion primitives. Curves are Emil Kowalski's strong ease variants;
+ * springs follow Apple's duration+bounce model (easy to reason about). Use these
+ * everywhere so motion feels consistent. All animate compositor props only
+ * (transform / opacity) and are gated by prefers-reduced-motion at the CSS layer.
+ */
+
+// Easing curves
+export const EASE_OUT = [0.23, 1, 0.32, 1] as const;
+export const EASE_IN_OUT = [0.77, 0, 0.175, 1] as const;
+
+// Spring presets
+export const SPRING_SNAPPY: Transition = { type: "spring", duration: 0.32, bounce: 0.14 };
+export const SPRING_SOFT: Transition = { type: "spring", duration: 0.5, bounce: 0.2 };
+
+// Durations (ms-as-seconds for Motion)
+export const DUR_FAST = 0.16;
+export const DUR_BASE = 0.24;
+
+// Reusable variants
+export const fadeInUp: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE_OUT } },
+};
+
+export const fadeIn: Variants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: 0.4, ease: EASE_OUT } },
+};
+
+export const popIn: Variants = {
+  hidden: { opacity: 0, scale: 0.96 },
+  show: { opacity: 1, scale: 1, transition: SPRING_SNAPPY },
+};
+
+/** Container that staggers its children's entrance. */
+export function staggerContainer(stagger = 0.07, delayChildren = 0.04): Variants {
+  return {
+    hidden: {},
+    show: { transition: { staggerChildren: stagger, delayChildren } },
+  };
+}
+
+/** Press feedback for buttons/affordances. */
+export const tapScale = { scale: 0.97 } as const;

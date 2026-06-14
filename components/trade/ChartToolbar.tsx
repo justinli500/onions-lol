@@ -3,6 +3,7 @@
 import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
 import { TIMEFRAMES, type TimeframeId } from "@/lib/chartWindow";
+import { SPRING_SNAPPY, tapScale } from "@/lib/animations";
 
 type Mode = "line" | "candles" | "onions";
 const MODES: { id: Mode; label: string }[] = [
@@ -25,37 +26,46 @@ export function ChartToolbar({
   return (
     <div className="flex items-center justify-between mb-2">
       <div className="flex gap-0.5">
-        {TIMEFRAMES.map((t) => (
-          <button
-            key={t.id}
-            onClick={() => onTimeframe(t.id)}
-            className={cn(
-              "text-xs font-bold px-2.5 py-1.5 rounded-full transition-colors",
-              timeframe === t.id
-                ? "bg-mustard text-red"
-                : "text-red/55 hover:text-red",
-            )}
-          >
-            {t.label}
-          </button>
-        ))}
+        {TIMEFRAMES.map((t) => {
+          const on = timeframe === t.id;
+          return (
+            <motion.button
+              key={t.id}
+              onClick={() => onTimeframe(t.id)}
+              whileTap={tapScale}
+              className={cn(
+                "relative isolate text-xs font-bold px-2.5 py-1.5 rounded-full transition-colors",
+                on ? "text-red" : "text-red/55 hover:text-red",
+              )}
+            >
+              {on && (
+                <motion.span
+                  layoutId="tf-ind"
+                  transition={SPRING_SNAPPY}
+                  className="absolute inset-0 -z-10 rounded-full bg-mustard"
+                />
+              )}
+              {t.label}
+            </motion.button>
+          );
+        })}
       </div>
       <div className="relative inline-flex rounded-full border-[1.5px] border-red/85 p-[3px] bg-paper">
         {MODES.map((m) => (
           <motion.button
             key={m.id}
             onClick={() => onMode(m.id)}
-            whileTap={{ scale: 0.96 }}
+            whileTap={tapScale}
             className={cn(
-              "relative z-[1] text-xs font-bold px-3 py-1.5 rounded-full transition-colors",
+              "relative isolate text-xs font-bold px-3 py-1.5 rounded-full transition-colors",
               mode === m.id ? "text-paper" : "text-red",
             )}
           >
             {mode === m.id && (
               <motion.span
                 layoutId="mode-ind"
-                transition={{ type: "spring", duration: 0.35, bounce: 0.1 }}
-                className="absolute inset-0 -z-[1] rounded-full bg-red"
+                transition={SPRING_SNAPPY}
+                className="absolute inset-0 -z-10 rounded-full bg-red"
               />
             )}
             {m.label}

@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { motion } from "motion/react";
 import { markAtUsd } from "@shared/mark";
 import { fmtPrice } from "@/lib/format";
 import { Sparkline } from "@/components/markets/Sparkline";
 import { SentimentBar } from "@/components/markets/SentimentBar";
 import { MARKETS, marketSeries } from "@/lib/markets";
+import { popIn } from "@/lib/animations";
 
 function compactUsd(n: number): string {
   return n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n.toLocaleString("en-US")}`;
@@ -27,7 +29,12 @@ export function FeaturedMarket() {
   const series = marketSeries(m, 72);
 
   return (
-    <div className="rounded-2xl surface-card overflow-hidden">
+    <motion.div
+      variants={popIn}
+      initial="hidden"
+      animate="show"
+      className="rounded-2xl surface-card overflow-hidden"
+    >
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4 p-5 sm:p-6">
         <div className="min-w-0">
           <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green">
@@ -68,6 +75,6 @@ export function FeaturedMarket() {
           Trade {m.name}
         </Link>
       </div>
-    </div>
+    </motion.div>
   );
 }
