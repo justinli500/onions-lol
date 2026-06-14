@@ -30,6 +30,7 @@ contract Vault {
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
     event HouseProvided(uint256 amount);
+    event HouseWithdrawn(uint256 amount);
     event MarginLocked(address indexed user, uint256 margin);
     event PositionSettled(address indexed user, uint256 margin, int256 pnl, uint256 payout);
     event FuturesSet(address indexed futures);
@@ -95,6 +96,16 @@ contract Vault {
         usdc.safeTransferFrom(msg.sender, address(this), amount);
         houseLiquidity += amount;
         emit HouseProvided(amount);
+    }
+
+    /// @notice Owner reclaims FREE house liquidity (never touches lockedMargin or
+    /// reservedProfit, so open positions stay fully solvent). The inverse of provideHouse.
+    function withdrawHouse(uint256 amount) external onlyOwner {
+        if (amount == 0) revert ZeroAmount();
+        if (amount > houseLiquidity) revert InsufficientHouse();
+        houseLiquidity -= amount;
+        usdc.safeTransfer(owner, amount);
+        emit HouseWithdrawn(amount);
     }
 
     // ----------------------------------------------------------- futures-only
