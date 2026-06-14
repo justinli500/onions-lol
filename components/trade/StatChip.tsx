@@ -10,8 +10,8 @@ export function StatChip({
   tone?: "default" | "gold" | "green";
 }) {
   return (
-    <div className="rounded-[10px] border-[1.5px] border-red/85 bg-card px-3 py-1.5">
-      <div className="text-[9.5px] uppercase tracking-[0.08em] font-extrabold text-red">
+    <div className="rounded-xl surface-inset px-3 py-1.5">
+      <div className="text-[9.5px] uppercase tracking-[0.08em] font-extrabold text-red/75">
         {label}
       </div>
       <div

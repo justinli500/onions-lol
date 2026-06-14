@@ -54,7 +54,7 @@ export function OrderTicket({
   const invalid = margin <= 0 || exceeds;
 
   return (
-    <div className="rounded-[18px] border-[2.5px] border-red bg-card overflow-hidden">
+    <div className="rounded-2xl surface-card overflow-hidden">
       <div className="bg-red text-paper px-4 py-[11px] flex justify-between items-center">
         <span className="font-display text-sm tracking-[0.04em]">ORDER TICKET</span>
         <span className="font-bold text-xs text-mustard">№ 1958</span>
@@ -98,7 +98,7 @@ export function OrderTicket({
               </button>
             </span>
           </div>
-          <label className="flex items-center gap-2 rounded-[10px] border-[1.5px] border-bd bg-paper px-3">
+          <label className="flex items-center gap-2 rounded-xl surface-inset px-3 focus-within:border-red/40 transition-colors">
             <span className="text-sm text-ink/50">$</span>
             <input
               type="number"
@@ -156,7 +156,7 @@ export function OrderTicket({
         </div>
 
         {/* Summary */}
-        <div className="rounded-[10px] border border-line bg-paper px-3 py-2">
+        <div className="rounded-xl surface-inset px-3 py-2">
           <Row k="Entry (mark)" v={fmtPrice(price)} />
           <Row k="Notional" v={fmtUSD(notional)} />
           <Row k="Est. liq price" v={fmtPrice(liqPrice)} />

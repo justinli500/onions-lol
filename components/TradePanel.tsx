@@ -57,7 +57,7 @@ function TradePanelInner() {
 
   if (collateral <= 0) {
     return (
-      <div className="rounded-[18px] border-[2.5px] border-red bg-card overflow-hidden">
+      <div className="rounded-2xl surface-card overflow-hidden">
         <div className="bg-red text-paper px-4 py-[11px] flex justify-between items-center">
           <span className="font-display text-sm tracking-[0.04em]">ORDER TICKET</span>
           <span className="font-bold text-xs text-mustard">№ 1958</span>

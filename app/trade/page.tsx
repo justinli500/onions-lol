@@ -39,11 +39,11 @@ function TradePageInner() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-[22px] items-start">
         <div>
           <PriceHeader market={market} />
-          <div className="mt-4 rounded-[18px] border-[2.5px] border-red bg-card px-3.5 pt-3.5 pb-2 relative">
+          <div className="mt-4 rounded-2xl surface-card px-3.5 pt-3.5 pb-2 relative">
             <ChartToolbar mode={mode} onMode={setMode} timeframe={timeframe} onTimeframe={setTimeframe} />
             <div className="h-[312px]"><PriceChart anchorUsd={anchorUsd} mode={mode} timeframe={timeframe} /></div>
           </div>
-          <div className="mt-4 rounded-[18px] border-[2.5px] border-red bg-card p-4">
+          <div className="mt-4 rounded-2xl surface-card p-4">
             <h2 className="font-display text-sm text-red mb-3">POSITIONS</h2>
             <PositionsList />
           </div>

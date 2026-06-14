@@ -51,6 +51,22 @@ body {
 .font-script { font-family: var(--font-script), cursive; }
 .font-display { font-family: var(--font-display), sans-serif; }
 
+/* Card surface: a single considered treatment — the card sits a touch lighter
+   than the paper (elevation), framed by a whisper-quiet warm hairline and a
+   soft warm shadow for depth, instead of a heavy uniform red outline. */
+.surface-card {
+  background-color: var(--card);
+  border: 1px solid color-mix(in srgb, var(--red) 14%, transparent);
+  box-shadow:
+    0 1px 2px rgba(74, 28, 12, 0.05),
+    0 14px 30px -18px rgba(74, 28, 12, 0.22);
+}
+/* Inset surface: receives content (inputs, stat chips) — slightly recessed. */
+.surface-inset {
+  background-color: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--red) 12%, transparent);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
 }

@@ -8,7 +8,7 @@ const idle = "text-red hover:bg-red/[0.08]";
 
 export function Nav({ active: activeTab = "trade" }: { active?: "trade" | "markets" | "about" }) {
   return (
-    <nav className="flex items-center justify-between gap-1.5 rounded-full border-2 border-red bg-card pl-2.5 pr-1.5 py-2 sm:gap-3.5 sm:pl-[18px] sm:pr-2.5">
+    <nav className="flex items-center justify-between gap-1.5 rounded-full surface-card pl-2.5 pr-1.5 py-2 sm:gap-3.5 sm:pl-[18px] sm:pr-2.5">
       <Link href="/" className="flex items-baseline gap-0.5 font-extrabold text-[15px] text-red tracking-tight sm:text-[20px]">
         <span className="text-sm mr-0.5 sm:mr-[5px] sm:text-[19px]">🧅</span>
         <span className="font-script text-[19px] font-normal mr-px sm:text-[27px]">onions</span>

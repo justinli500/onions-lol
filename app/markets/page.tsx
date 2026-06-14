@@ -80,16 +80,16 @@ export default function MarketsPage() {
           {MARKETS.length} Markets
         </h1>
         <div className="flex gap-2">
-          <span className="rounded-full border-[1.5px] border-bd bg-card px-3.5 py-2 text-xs font-bold text-red">
+          <span className="rounded-full surface-inset px-3.5 py-2 text-xs font-bold text-red">
             Open Interest ▾
           </span>
-          <span className="hidden rounded-full border-[1.5px] border-bd bg-card px-3.5 py-2 text-xs font-bold text-red sm:inline">
+          <span className="hidden rounded-full surface-inset px-3.5 py-2 text-xs font-bold text-red sm:inline">
             3 Months ▾
           </span>
         </div>
       </div>
 
-      <div className="mt-5 rounded-[18px] border-[2.5px] border-red bg-card p-3 sm:p-5">
+      <div className="mt-5 rounded-2xl surface-card p-3 sm:p-5">
         {/* Column headers */}
         <div className="flex items-center gap-4 px-2 pb-2 text-[11px] uppercase tracking-[0.06em] text-red">
           <div className="min-w-0 flex-1">Market</div>
