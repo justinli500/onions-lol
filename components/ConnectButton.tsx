@@ -1,7 +1,8 @@
 "use client";
 
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy } from "@privy-io/react-auth";
 import { DEMO_MODE, DEMO_ADDRESS } from "@/lib/demo";
+import { WalletMenu } from "@/components/WalletMenu";
 
 // NEXT_PUBLIC_ vars are inlined at build, so this matches providers.tsx exactly:
 // when there's no app id, Privy isn't mounted, so we must NOT call its hooks.
@@ -12,9 +13,7 @@ function short(addr?: string) {
 }
 
 function ConnectButtonInner() {
-  const { ready, authenticated, login, logout, user } = usePrivy();
-  const { wallets } = useWallets();
-  const addr = wallets[0]?.address;
+  const { ready, authenticated, login } = usePrivy();
 
   if (!ready) {
     return <div className="h-9 w-24 animate-pulse sm:w-28 rounded-full bg-card border-2 border-red" />;
@@ -29,15 +28,7 @@ function ConnectButtonInner() {
       </button>
     );
   }
-  return (
-    <button
-      onClick={logout}
-      className="bg-card text-red border-2 border-red font-extrabold text-sm px-2.5 py-2 rounded-full sm:px-[18px] active:scale-[0.96] transition-transform tabular"
-      title={user?.email?.address ?? addr}
-    >
-      {short(addr) || "Connected"}
-    </button>
-  );
+  return <WalletMenu />;
 }
 
 export function ConnectButton() {
