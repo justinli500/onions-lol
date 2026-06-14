@@ -11,6 +11,7 @@ import { USDC_ADDRESS, VAULT_ADDRESS, erc20Abi, vaultAbi } from "@/lib/contracts
 import { useWalletUsdc } from "@/lib/useExchange";
 import { fmtUSD } from "@/lib/format";
 import { msgOf } from "@/lib/err";
+import { CHAIN_ID } from "@/lib/chain";
 
 const PRIVY_ENABLED = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const BLINK_ENV =
@@ -147,7 +148,7 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
       await ensureGas();
       const before = await readUsdc();
       const value = parseUnits(String(amount), 6);
-      await requestDeposit({ amount, chainId: 84532, address: addr, token: USDC_ADDRESS });
+      await requestDeposit({ amount, chainId: CHAIN_ID, address: addr, token: USDC_ADDRESS });
       toast.message("Funds on the way — waiting for settlement…");
       const ok = await waitForBalance(readUsdc, before + value, 120_000);
       if (!ok) return toast.error("Deposit didn't arrive — try again or use the direct option");
