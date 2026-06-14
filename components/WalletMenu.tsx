@@ -84,6 +84,13 @@ export function WalletMenu() {
     };
   }, [open]);
 
+  // Let other parts of the app (e.g. the trade panel's "Cash out" link) open this menu.
+  useEffect(() => {
+    const openMenu = () => setOpen(true);
+    window.addEventListener("onions:open-wallet", openMenu);
+    return () => window.removeEventListener("onions:open-wallet", openMenu);
+  }, []);
+
   const ethNum = ethBal.data ? Number(formatEther(ethBal.data.value)) : 0;
   const ethSym = ethBal.data?.symbol ?? "ETH";
   const ethDisplay = ethBal.data ? `${ethNum.toFixed(4)} ${ethSym}` : "—";
@@ -159,11 +166,21 @@ export function WalletMenu() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="bg-card text-red border-2 border-red font-extrabold text-sm px-2.5 py-2 rounded-full sm:px-[18px] active:scale-[0.96] transition-transform tabular"
-        title={user?.email?.address ?? addr}
+        className="flex items-center gap-1.5 bg-card text-red border-2 border-red font-extrabold text-sm px-2.5 py-2 rounded-full sm:px-[18px] active:scale-[0.96] transition-transform tabular"
+        title={user?.email?.address ?? "Wallet — balance, cash out, export"}
         aria-expanded={open}
       >
-        {short(addr) || "Connected"}
+        <span>{short(addr) || "Wallet"}</span>
+        <svg
+          width="11"
+          height="11"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden
+          className={cn("transition-transform", open && "rotate-180")}
+        >
+          <path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
       </button>
 
       <AnimatePresence>

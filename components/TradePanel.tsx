@@ -70,6 +70,12 @@ function TradePanelInner() {
             Deposit USDC to start trading onions.
           </p>
           <DepositButton onDeposited={refetch} />
+          <button
+            onClick={() => window.dispatchEvent(new Event("onions:open-wallet"))}
+            className="self-start text-xs font-semibold text-mustard-dp hover:underline"
+          >
+            Withdraw / cash out wallet funds →
+          </button>
         </div>
       </div>
     );
