@@ -9,6 +9,7 @@ import { useCollateral } from "@/lib/useExchange";
 import { usePrice } from "@/lib/usePrice";
 import { fmtPrice, fmtUSD } from "@/lib/format";
 import { DepositButton } from "@/components/DepositButton";
+import { WithdrawButton } from "@/components/WithdrawButton";
 import { msgOf } from "@/lib/err";
 
 const PRIVY_ENABLED = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
@@ -37,6 +38,7 @@ function TradePanelInner() {
   const [expIdx, setExpIdx] = useState(1);
   const [busy, setBusy] = useState(false);
   const [showDeposit, setShowDeposit] = useState(false);
+  const [showWithdraw, setShowWithdraw] = useState(false);
 
   const notional = margin * lev;
   const isLong = side === SIDE.LONG;
@@ -79,12 +81,20 @@ function TradePanelInner() {
           Collateral{" "}
           <span className="tabular text-foreground">{fmtUSD(collateral)}</span>
         </span>
-        <button
-          onClick={() => setShowDeposit((v) => !v)}
-          className="rounded-md border border-border px-2 py-1 font-medium text-foreground transition hover:bg-surface-2"
-        >
-          {showDeposit ? "Close" : "+ Deposit"}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowDeposit((v) => !v)}
+            className="rounded-md border border-border px-2 py-1 font-medium text-foreground transition hover:bg-surface-2"
+          >
+            {showDeposit ? "Close" : "+ Deposit"}
+          </button>
+          <button
+            onClick={() => setShowWithdraw((v) => !v)}
+            className="rounded-md border border-border px-2 py-1 font-medium text-foreground transition hover:bg-surface-2"
+          >
+            {showWithdraw ? "Close" : "Withdraw"}
+          </button>
+        </div>
       </div>
       {showDeposit && (
         <div className="rounded-lg border border-border bg-surface-2 p-3">
@@ -92,6 +102,16 @@ function TradePanelInner() {
             onDeposited={() => {
               refetch();
               setShowDeposit(false);
+            }}
+          />
+        </div>
+      )}
+      {showWithdraw && (
+        <div className="rounded-lg border border-border bg-surface-2 p-3">
+          <WithdrawButton
+            onWithdrawn={() => {
+              refetch();
+              setShowWithdraw(false);
             }}
           />
         </div>
