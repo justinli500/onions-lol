@@ -69,7 +69,6 @@ function HeroBackdrop() {
         className="h-full w-full scale-[1.06] object-cover object-[50%_82%] opacity-[0.32] mix-blend-multiply [filter:sepia(0.45)_saturate(1.35)_contrast(1.03)] motion-reduce:hidden"
       >
         <source src="/hero.mp4" type="video/mp4" />
-        <source src="/hero.webm" type="video/webm" />
       </video>
       {/* watermark mask: dissolve the top-right corner (where logos sit) back into paper */}
       <div
