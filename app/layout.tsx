@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo, Archivo_Black, Yellowtail } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { Nav } from "@/components/trade/Nav";
 
 const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"], weight: ["500","600","700","800"] });
 const archivoBlack = Archivo_Black({ variable: "--font-archivo-black", subsets: ["latin"], weight: "400" });
@@ -22,7 +23,13 @@ export default function RootLayout({
       className={`${archivo.variable} ${archivoBlack.variable} ${yellowtail.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <Providers>{children}</Providers>
+        <Providers>
+          {/* Persistent across navigations so the active pill morphs between routes. */}
+          <div className="mx-auto w-full max-w-[1320px] px-[26px] pt-[18px]">
+            <Nav />
+          </div>
+          {children}
+        </Providers>
       </body>
     </html>
   );

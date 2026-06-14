@@ -5,7 +5,6 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
 import { usePrice } from "@/lib/usePrice";
 import { fmtPrice } from "@/lib/format";
-import { Nav } from "@/components/trade/Nav";
 import { Marquee } from "@/components/trade/Marquee";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -148,11 +147,8 @@ const STORY: { year?: string; node: React.ReactNode }[] = [
 export function Landing() {
   return (
     <>
-      <div className="mx-auto max-w-[1320px] px-[26px] pt-[18px]">
-        <Nav active="about" />
-      </div>
       {/* full-bleed ticker — spans the whole viewport, edge to edge */}
-      <div className="my-3.5">
+      <div className="mt-3.5 mb-3.5">
         <Marquee fullBleed />
       </div>
 

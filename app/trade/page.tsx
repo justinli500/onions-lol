@@ -5,7 +5,6 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
 import { usePrice } from "@/lib/usePrice";
-import { Nav } from "@/components/trade/Nav";
 import { Marquee } from "@/components/trade/Marquee";
 import { PriceHeader } from "@/components/trade/PriceHeader";
 import { ChartToolbar } from "@/components/trade/ChartToolbar";
@@ -35,8 +34,7 @@ function TradePageInner() {
   const anchorUsd = market ? market.price : realAnchor;
 
   return (
-    <div className="w-full max-w-[1320px] mx-auto px-[26px] pt-[18px] pb-[50px]">
-      <Nav />
+    <div className="w-full max-w-[1320px] mx-auto px-[26px] pb-[50px]">
       <Marquee />
       <motion.div
         variants={staggerContainer()}

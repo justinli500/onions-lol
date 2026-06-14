@@ -1,4 +1,3 @@
-import { Nav } from "@/components/trade/Nav";
 import { Marquee } from "@/components/trade/Marquee";
 import { FeaturedMarket } from "@/components/markets/FeaturedMarket";
 
@@ -9,8 +8,7 @@ export const metadata = {
 
 export default function MarketsPage() {
   return (
-    <div className="w-full max-w-[920px] mx-auto px-[26px] pt-[18px] pb-[50px]">
-      <Nav active="markets" />
+    <div className="w-full max-w-[920px] mx-auto px-[26px] pb-[50px]">
       <Marquee />
 
       <div className="mt-2">
