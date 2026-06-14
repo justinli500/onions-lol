@@ -66,7 +66,7 @@ function HeroBackdrop() {
         loop
         playsInline
         preload="auto"
-        className="h-full w-full scale-[1.06] object-cover object-[50%_82%] opacity-[0.32] mix-blend-multiply [filter:sepia(0.45)_saturate(1.35)_contrast(1.03)] motion-reduce:hidden"
+        className="h-full w-full scale-[1.06] object-cover object-[50%_82%] opacity-[0.55] mix-blend-multiply [filter:sepia(0.4)_saturate(1.35)_contrast(1.03)] motion-reduce:hidden"
       >
         <source src="/hero.mp4" type="video/mp4" />
       </video>
@@ -83,7 +83,7 @@ function HeroBackdrop() {
         className="absolute inset-0"
         style={{
           background:
-            "linear-gradient(to bottom, rgba(245,234,208,0.40) 0%, rgba(245,234,208,0.12) 42%, rgba(245,234,208,0.85) 86%, var(--paper) 100%)",
+            "linear-gradient(to bottom, rgba(245,234,208,0.22) 0%, rgba(245,234,208,0.06) 45%, rgba(245,234,208,0.85) 88%, var(--paper) 100%)",
         }}
       />
     </div>
