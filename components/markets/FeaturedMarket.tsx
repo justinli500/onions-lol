@@ -8,7 +8,7 @@ import { fmtPrice } from "@/lib/format";
 import { Sparkline } from "@/components/markets/Sparkline";
 import { SentimentBar } from "@/components/markets/SentimentBar";
 import { MARKETS, marketSeries } from "@/lib/markets";
-import { popIn } from "@/lib/animations";
+import { popIn, useEntranceGate } from "@/lib/animations";
 
 function compactUsd(n: number): string {
   return n >= 1000 ? `$${(n / 1000).toFixed(1)}K` : `$${n.toLocaleString("en-US")}`;
@@ -27,11 +27,12 @@ export function FeaturedMarket() {
 
   const up = m.changePct >= 0;
   const series = marketSeries(m, 72);
+  const play = useEntranceGate("markets");
 
   return (
     <motion.div
       variants={popIn}
-      initial="hidden"
+      initial={play ? "hidden" : false}
       animate="show"
       className="rounded-2xl surface-card overflow-hidden"
     >

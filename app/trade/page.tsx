@@ -11,7 +11,7 @@ import { ChartToolbar } from "@/components/trade/ChartToolbar";
 import type { TimeframeId } from "@/lib/chartWindow";
 import { DEMO_MODE } from "@/lib/demo";
 import { MARKETS } from "@/lib/markets";
-import { fadeInUp, staggerContainer } from "@/lib/animations";
+import { fadeInUp, staggerContainer, useEntranceGate } from "@/lib/animations";
 
 const PriceChart = dynamic(() => import("@/components/PriceChart").then((m) => m.PriceChart), {
   ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-[14px] bg-paper-2" />,
@@ -26,6 +26,9 @@ function TradePageInner() {
   const params = useSearchParams();
   const [mode, setMode] = useState<Mode>("line");
   const [timeframe, setTimeframe] = useState<TimeframeId>("1D");
+  // Only play the entrance fade on the first visit this session, so swapping
+  // back to this page doesn't re-flash (grey out) the content.
+  const play = useEntranceGate("trade");
 
   // Demo-only: /trade?m=<id> picks one of the demo markets to display.
   const market = DEMO_MODE
@@ -38,7 +41,7 @@ function TradePageInner() {
       <Marquee />
       <motion.div
         variants={staggerContainer()}
-        initial="hidden"
+        initial={play ? "hidden" : false}
         animate="show"
         className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-[22px] items-start"
       >

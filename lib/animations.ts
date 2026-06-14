@@ -1,4 +1,23 @@
+import { useState } from "react";
 import type { Transition, Variants } from "motion/react";
+
+/**
+ * Entrance gate. Returns true only the first time `key` mounts this session.
+ * Pages remount (and replay their opacity fade-in) on every client navigation,
+ * so rapid back-and-forth swapping otherwise leaves the text perpetually
+ * mid-fade — looking like it greys out. Gate the entrance with this and pass
+ * `initial={play ? "hidden" : false}` so repeat visits render instantly.
+ * Resets on a full page reload (a fresh load should animate).
+ */
+const enteredKeys = new Set<string>();
+export function useEntranceGate(key: string): boolean {
+  const [first] = useState(() => {
+    if (enteredKeys.has(key)) return false;
+    enteredKeys.add(key);
+    return true;
+  });
+  return first;
+}
 
 /**
  * Shared motion primitives. Curves are Emil Kowalski's strong ease variants;

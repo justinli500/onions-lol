@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/cn";
 import { usePrice } from "@/lib/usePrice";
 import { fmtPrice } from "@/lib/format";
+import { useEntranceGate } from "@/lib/animations";
 import { Marquee } from "@/components/trade/Marquee";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -145,6 +146,9 @@ const STORY: { year?: string; node: React.ReactNode }[] = [
 ];
 
 export function Landing() {
+  // Play the masthead entrance only on the first visit this session — repeat
+  // visits render instantly so rapid navigation doesn't re-flash (grey out) it.
+  const play = useEntranceGate("about");
   return (
     <>
       {/* full-bleed ticker — spans the whole viewport, edge to edge */}
@@ -157,7 +161,7 @@ export function Landing() {
         <HeroBackdrop />
         <div className="relative z-10 mx-auto max-w-[1320px] px-[26px] pb-14 pt-8 md:pt-12">
           <motion.span
-            initial={{ opacity: 0, y: 10, rotate: -3 }}
+            initial={play ? { opacity: 0, y: 10, rotate: -3 } : false}
             animate={{ opacity: 1, y: 0, rotate: -2 }}
             transition={{ duration: 0.5, ease }}
             className="inline-block rounded-[6px] border-2 border-red/80 px-3.5 py-1.5 font-display text-[10.5px] uppercase tracking-[0.16em] text-red"
@@ -166,7 +170,7 @@ export function Landing() {
           </motion.span>
 
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
+            initial={play ? { opacity: 0, y: 12 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.05, ease }}
             className="mt-7 -mb-1 inline-block -rotate-2 font-script text-[34px] leading-none text-red md:text-[40px]"
@@ -175,7 +179,7 @@ export function Landing() {
           </motion.div>
 
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={play ? { opacity: 0, y: 20 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.1, ease }}
             className="mx-auto max-w-4xl text-balance pb-1 font-display text-[34px] uppercase leading-[0.94] tracking-tight text-ink sm:text-[52px] md:text-[78px]"
@@ -186,7 +190,7 @@ export function Landing() {
           </motion.h1>
 
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={play ? { opacity: 0, y: 20 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.2, ease }}
             className="mx-auto mt-6 max-w-2xl text-balance text-[17px] leading-relaxed text-ink/70 md:text-xl"
@@ -197,7 +201,7 @@ export function Landing() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={play ? { opacity: 0, y: 20 } : false}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, ease }}
             className="mt-9 flex flex-col items-center gap-5"
