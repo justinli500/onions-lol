@@ -8,14 +8,19 @@
 import "dotenv/config";
 import { createWalletClient, createPublicClient, http, type Abi } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
 import { markAtE8, dayStartMs } from "../../shared/mark";
 import { PRICE_SCALE, TICK_MS, DEFAULT_ANCHOR_USD } from "../../shared/constants";
+import { resolveChain } from "../../shared/chain";
 import oracleAbi from "../../abi/OnionOracle.json" with { type: "json" };
 import futuresAbi from "../../abi/OnionFutures.json" with { type: "json" };
 import { fetchOnionAnchorUsd } from "./usda";
 
-const RPC = process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org";
+const CHAIN_ID = Number(process.env.CHAIN_ID ?? 84532);
+const { chain, defaultRpcUrl } = resolveChain(CHAIN_ID);
+const RPC = process.env.RPC_URL || process.env.BASE_SEPOLIA_RPC_URL || defaultRpcUrl;
+// On-chain push cadence, decoupled from the shared TICK_MS price curve so we can
+// push less often on mainnet without changing the deterministic mark math.
+const PUSH_MS = Number(process.env.KEEPER_PUSH_MS ?? TICK_MS);
 const PK = process.env.KEEPER_PRIVATE_KEY as `0x${string}` | undefined;
 const ORACLE = process.env.ORACLE_ADDRESS as `0x${string}` | undefined;
 const FUTURES = process.env.FUTURES_ADDRESS as `0x${string}` | undefined;
@@ -27,8 +32,8 @@ if (!PK || !ORACLE) {
 }
 
 const account = privateKeyToAccount(PK);
-const wallet = createWalletClient({ account, chain: baseSepolia, transport: http(RPC) });
-const pub = createPublicClient({ chain: baseSepolia, transport: http(RPC) });
+const wallet = createWalletClient({ account, chain, transport: http(RPC) });
+const pub = createPublicClient({ chain, transport: http(RPC) });
 const oracle = oracleAbi as Abi;
 const futures = futuresAbi as Abi;
 
@@ -114,7 +119,7 @@ async function main() {
   nonce = await pub.getTransactionCount({ address: account.address, blockTag: "pending" });
   await refreshAnchor();
   await pushMark();
-  setInterval(pushMark, TICK_MS);
+  setInterval(pushMark, PUSH_MS);
   setInterval(refreshAnchor, 6 * 60 * 60 * 1000); // every 6h
   setInterval(settleDue, 30_000);
 }
