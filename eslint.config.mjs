@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Scope lint to the Next.js frontend — non-web subprojects + vendored libs
+    // have their own toolchains (Foundry, tsx) and shouldn't be ESLint'd here.
+    "contracts/**",
+    "oracle/**",
+    "abi/**",
+    "spike/**",
   ]),
 ]);
 
