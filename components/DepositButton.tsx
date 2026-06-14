@@ -37,7 +37,13 @@ function useSafeBlinkDeposit(getToken: () => Promise<string | null>) {
   const [status, setStatus] = useState<DepositStatus>("idle");
   const depositRef = useRef<Deposit | null>(null);
   const getTokenRef = useRef(getToken);
-  getTokenRef.current = getToken;
+  // Keep the latest getToken without resubscribing the Deposit. Updated in an
+  // effect (every render, no deps) rather than during render to satisfy
+  // react-hooks/refs — behavior is identical since getTokenRef.current is only
+  // read inside the async signer, which always runs after this effect.
+  useEffect(() => {
+    getTokenRef.current = getToken;
+  });
 
   useEffect(() => {
     const signer = async (data: SignerRequest): Promise<SignerResponse> => {
@@ -188,32 +194,32 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
     <div className="flex flex-col gap-3">
       {/* PRIMARY: one-click deposit of USDC already in your wallet */}
       <div className="flex justify-between text-xs">
-        <span className="text-muted">In your wallet</span>
-        <span className="tabular text-foreground">{fmtUSD(walletUsdc)}</span>
+        <span className="text-ink/55">In your wallet</span>
+        <span className="tabular text-ink">{fmtUSD(walletUsdc)}</span>
       </div>
       <button
         onClick={onCreditExisting}
         disabled={busy || walletUsdc <= 0}
-        className="h-11 rounded-xl bg-accent font-semibold text-black transition hover:brightness-110 active:scale-95 disabled:opacity-50"
+        className="w-full bg-green text-white font-display rounded-[12px] py-3 active:scale-[0.985] transition hover:brightness-105 disabled:opacity-50"
       >
         {busy ? "Depositing…" : walletUsdc > 0 ? `Deposit ${fmtUSD(walletUsdc)}` : "No USDC in wallet yet"}
       </button>
       {addr && walletUsdc <= 0 && (
-        <p className="text-xs text-muted">
+        <p className="text-xs text-ink/55">
           Send Base Sepolia USDC to{" "}
-          <code className="break-all text-[11px] text-foreground">{addr}</code>, then deposit.
+          <code className="break-all rounded bg-card px-1 py-0.5 text-[11px] text-ink">{addr}</code>, then deposit.
         </p>
       )}
 
       {/* SECONDARY: Blink one-tap (showcased; testnet routing flaky — pay with USDC) */}
-      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide text-muted">
-        <span className="h-px flex-1 bg-border" />
+      <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide text-ink/45">
+        <span className="h-px flex-1 bg-line" />
         or pay with Blink
-        <span className="h-px flex-1 bg-border" />
+        <span className="h-px flex-1 bg-line" />
       </div>
       <div className="flex items-center gap-2">
-        <label className="flex flex-1 items-center gap-1 rounded-lg border border-border bg-surface-2 px-3">
-          <span className="text-sm text-muted">$</span>
+        <label className="flex flex-1 items-center gap-1 rounded-lg border border-line bg-paper px-3">
+          <span className="text-sm text-ink/55">$</span>
           <input
             type="number"
             min={1}
@@ -225,7 +231,7 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
         <button
           onClick={onDepositBlink}
           disabled={loading}
-          className="h-10 shrink-0 rounded-lg border border-border bg-surface px-3 text-sm font-medium text-foreground transition hover:bg-surface-2 disabled:opacity-50"
+          className="shrink-0 rounded-full border-2 border-red px-3 py-2 text-sm font-bold text-red transition hover:bg-red/[0.08] active:scale-[0.97] disabled:opacity-50"
         >
           {loading ? "Working…" : "Pay with Blink"}
         </button>
@@ -240,7 +246,7 @@ export function DepositButton(props: { onDeposited?: () => void }) {
       <button
         disabled
         title="Set NEXT_PUBLIC_PRIVY_APP_ID to enable deposits"
-        className="h-11 w-full cursor-not-allowed rounded-xl border border-border bg-surface text-sm font-medium text-muted"
+        className="w-full cursor-not-allowed bg-green/40 text-white font-display rounded-[12px] py-3 text-sm"
       >
         Deposit
       </button>
