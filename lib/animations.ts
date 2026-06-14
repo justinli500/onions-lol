@@ -7,11 +7,17 @@ import type { Transition, Variants } from "motion/react";
  * so rapid back-and-forth swapping otherwise leaves the text perpetually
  * mid-fade — looking like it greys out. Gate the entrance with this and pass
  * `initial={play ? "hidden" : false}` so repeat visits render instantly.
- * Resets on a full page reload (a fresh load should animate).
+ *
+ * SSR-safe: the server (and therefore the first/hydration render on a fresh
+ * page load) ALWAYS returns true, so the entrance state is deterministic and
+ * matches the freshly-loaded client. The persistent server module Set is never
+ * touched on the server — only client-side navigations consult/record it.
+ * A full reload resets the client Set, so a fresh load animates again.
  */
 const enteredKeys = new Set<string>();
 export function useEntranceGate(key: string): boolean {
   const [first] = useState(() => {
+    if (typeof window === "undefined") return true; // SSR / hydration: animate
     if (enteredKeys.has(key)) return false;
     enteredKeys.add(key);
     return true;
