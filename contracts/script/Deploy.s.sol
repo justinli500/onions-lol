@@ -10,16 +10,19 @@ import {IOnionOracle} from "../src/interfaces/IOnionOracle.sol";
 import {IVault} from "../src/interfaces/IVault.sol";
 
 /// Deploys OnionOracle + Vault + OnionFutures, wires them, optionally seeds the
-/// house pool. USDC defaults to the token CONFIRMED in the Phase 1 Blink spike
-/// (Blink's sandbox delivers Circle's canonical Base Sepolia USDC) — never the
-/// SDK's Base-mainnet example.
+/// house pool. USDC defaults per chainid (Base mainnet 8453 -> canonical Circle
+/// USDC; Base Sepolia -> the Phase-1 spike-confirmed token) and is overridable
+/// via the USDC_ADDRESS env var. The contracts are immutable, so this guard
+/// prevents a mainnet deploy from being wired to a Sepolia token.
 contract Deploy is Script {
     address constant BASE_SEPOLIA_USDC = 0x036CbD53842c5426634e7929541eC2318f3dCF7e;
+    address constant BASE_MAINNET_USDC = 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913;
 
     function run() external {
         uint256 pk = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address keeper = vm.envOr("KEEPER_ADDRESS", vm.addr(pk));
-        address usdc = vm.envOr("USDC_ADDRESS", BASE_SEPOLIA_USDC);
+        address defaultUsdc = block.chainid == 8453 ? BASE_MAINNET_USDC : BASE_SEPOLIA_USDC;
+        address usdc = vm.envOr("USDC_ADDRESS", defaultUsdc);
         uint256 houseSeed = vm.envOr("HOUSE_SEED_USDC", uint256(0));
 
         vm.startBroadcast(pk);
