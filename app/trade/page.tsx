@@ -48,7 +48,7 @@ export default function TradePage() {
               <span className="grid h-7 w-7 place-items-center rounded-full bg-onion/15 text-sm">🧅</span>
               <div className="flex flex-col">
                 <span className="text-xs font-semibold leading-none">ONION</span>
-                <span className="text-[10px] leading-none text-muted">Base Sepolia</span>
+                <span className="text-[10px] leading-none text-muted">Base</span>
               </div>
             </div>
             <Stat label="Price" value={fmtPrice(price)} />

@@ -200,7 +200,7 @@ function DepositInner({ onDeposited }: { onDeposited?: () => void }) {
       </button>
       {addr && walletUsdc <= 0 && (
         <p className="text-xs text-muted">
-          Send Base Sepolia USDC to{" "}
+          Send Base USDC to{" "}
           <code className="break-all text-[11px] text-foreground">{addr}</code>, then deposit.
         </p>
       )}
