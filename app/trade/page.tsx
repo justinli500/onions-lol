@@ -1,87 +1,75 @@
 "use client";
 
-import Link from "next/link";
+import { Suspense, useState } from "react";
 import dynamic from "next/dynamic";
+import { useSearchParams } from "next/navigation";
+import { motion } from "motion/react";
 import { usePrice } from "@/lib/usePrice";
-import { fmtPrice } from "@/lib/format";
+import { Marquee } from "@/components/trade/Marquee";
+import { PriceHeader } from "@/components/trade/PriceHeader";
+import { ChartToolbar } from "@/components/trade/ChartToolbar";
+import type { TimeframeId } from "@/lib/chartWindow";
+import { DEMO_MODE } from "@/lib/demo";
+import { MARKETS } from "@/lib/markets";
+import { fadeInUp, staggerContainer, useEntranceGate } from "@/lib/animations";
 
-// Wallet + canvas UI are client-only (Privy state / DOM); keep them out of SSG.
-const ConnectButton = dynamic(
-  () => import("@/components/ConnectButton").then((m) => m.ConnectButton),
-  { ssr: false },
-);
-const PriceChart = dynamic(
-  () => import("@/components/PriceChart").then((m) => m.PriceChart),
-  { ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-lg bg-surface-2" /> },
-);
-const TradePanel = dynamic(
-  () => import("@/components/TradePanel").then((m) => m.TradePanel),
-  { ssr: false },
-);
-const PositionsList = dynamic(
-  () => import("@/components/PositionsList").then((m) => m.PositionsList),
-  { ssr: false },
-);
+const PriceChart = dynamic(() => import("@/components/PriceChart").then((m) => m.PriceChart), {
+  ssr: false, loading: () => <div className="h-full w-full animate-pulse rounded-[14px] bg-paper-2" />,
+});
+const TradePanel = dynamic(() => import("@/components/TradePanel").then((m) => m.TradePanel), { ssr: false });
+const PositionsList = dynamic(() => import("@/components/PositionsList").then((m) => m.PositionsList), { ssr: false });
 
-function Stat({ label, value, accent }: { label: string; value: string; accent?: string }) {
+type Mode = "line" | "candles" | "onions";
+
+function TradePageInner() {
+  const { anchorUsd: realAnchor } = usePrice();
+  const params = useSearchParams();
+  const [mode, setMode] = useState<Mode>("line");
+  const [timeframe, setTimeframe] = useState<TimeframeId>("1D");
+  // Only play the entrance fade on the first visit this session, so swapping
+  // back to this page doesn't re-flash (grey out) the content.
+  const play = useEntranceGate("trade");
+
+  // Demo-only: /trade?m=<id> picks one of the demo markets to display.
+  const market = DEMO_MODE
+    ? MARKETS.find((m) => m.id === params.get("m")) ?? MARKETS[0]
+    : undefined;
+  const anchorUsd = market ? market.price : realAnchor;
+
   return (
-    <div className="flex flex-col">
-      <span className="text-[11px] uppercase tracking-wide text-muted">{label}</span>
-      <span className={`tabular text-sm font-semibold ${accent ?? "text-foreground"}`}>{value}</span>
+    <div className="w-full max-w-[1320px] mx-auto px-[26px] pb-[50px]">
+      <Marquee />
+      <motion.div
+        variants={staggerContainer()}
+        initial={play ? "hidden" : false}
+        animate="show"
+        className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-[22px] items-start"
+      >
+        <div className="flex flex-col gap-4">
+          <motion.div variants={fadeInUp}>
+            <PriceHeader market={market} />
+          </motion.div>
+          <motion.div variants={fadeInUp} className="rounded-2xl surface-card px-3.5 pt-3.5 pb-2 relative">
+            <ChartToolbar mode={mode} onMode={setMode} timeframe={timeframe} onTimeframe={setTimeframe} />
+            <div className="h-[312px]"><PriceChart anchorUsd={anchorUsd} mode={mode} timeframe={timeframe} /></div>
+          </motion.div>
+          <motion.div variants={fadeInUp} className="rounded-2xl surface-card p-4">
+            <h2 className="font-display text-sm text-red mb-3">POSITIONS</h2>
+            <PositionsList />
+          </motion.div>
+        </div>
+        <motion.div variants={fadeInUp}>
+          <TradePanel />
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
 
 export default function TradePage() {
-  const { price, changePct, anchorUsd } = usePrice();
-  const up = changePct >= 0;
-
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="flex items-center justify-between gap-4 border-b border-border px-5 py-3">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="text-base font-bold tracking-tight">
-            onions<span className="text-onion">.lol</span>
-          </Link>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="grid h-7 w-7 place-items-center rounded-full bg-onion/15 text-sm">🧅</span>
-              <div className="flex flex-col">
-                <span className="text-xs font-semibold leading-none">ONION</span>
-                <span className="text-[10px] leading-none text-muted">Base</span>
-              </div>
-            </div>
-            <Stat label="Price" value={fmtPrice(price)} />
-            <Stat
-              label="Today"
-              value={`${up ? "+" : ""}${changePct.toFixed(2)}%`}
-              accent={up ? "text-up" : "text-down"}
-            />
-          </div>
-        </div>
-        <ConnectButton />
-      </header>
-
-      <main className="grid flex-1 gap-3 p-3 lg:grid-cols-[1fr_340px]">
-        <div className="flex flex-col gap-3">
-          <section className="h-[460px] rounded-xl border border-border bg-surface p-2">
-            <PriceChart anchorUsd={anchorUsd} />
-          </section>
-          <section className="min-h-[200px] rounded-xl border border-border bg-surface p-4">
-            <h2 className="mb-3 text-sm font-semibold">Positions</h2>
-            <PositionsList />
-          </section>
-        </div>
-        <aside className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
-          <h2 className="text-sm font-semibold">Trade</h2>
-          <TradePanel />
-        </aside>
-      </main>
-
-      <footer className="border-t border-border px-5 py-2.5 text-center text-[11px] text-muted">
-        Intraday prices are simulated for the demo; contracts settle against
-        official USDA onion prices.
-      </footer>
-    </div>
+    <Suspense fallback={null}>
+      <TradePageInner />
+    </Suspense>
   );
 }

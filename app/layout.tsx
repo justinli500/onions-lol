@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Archivo, Archivo_Black, Yellowtail } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import { Nav } from "@/components/trade/Nav";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const archivo = Archivo({ variable: "--font-archivo", subsets: ["latin"], weight: ["500","600","700","800"] });
+const archivoBlack = Archivo_Black({ variable: "--font-archivo-black", subsets: ["latin"], weight: "400" });
+const yellowtail = Yellowtail({ variable: "--font-yellowtail", subsets: ["latin"], weight: "400" });
 
 export const metadata: Metadata = {
   title: "onions.lol — trade the one future America banned",
@@ -18,10 +20,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${archivo.variable} ${archivoBlack.variable} ${yellowtail.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
-        <Providers>{children}</Providers>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <Providers>
+          {/* Persistent across navigations so the active pill morphs between routes. */}
+          <div className="mx-auto w-full max-w-[1320px] px-[26px] pt-[18px]">
+            <Nav />
+          </div>
+          {children}
+        </Providers>
       </body>
     </html>
   );

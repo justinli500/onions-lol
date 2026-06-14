@@ -42,30 +42,30 @@ export function WithdrawButton({ onWithdrawn }: { onWithdrawn?: () => void }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="mb-1 flex justify-between text-xs text-muted">
+      <div className="flex justify-between text-xs text-ink/60">
         <span>Amount</span>
         <button
           type="button"
           onClick={() => setAmount(Math.floor(collateral))}
-          className="transition hover:text-foreground"
+          className="text-mustard-dp font-semibold hover:underline"
         >
-          Avail {fmtUSD(collateral)} · Max
+          Avail {fmtUSD(collateral)} · MAX
         </button>
       </div>
-      <label className="flex items-center gap-2 rounded-lg border border-border bg-surface-2 px-3">
-        <span className="text-sm text-muted">$</span>
+      <label className="flex items-center gap-2 rounded-xl surface-inset px-3 focus-within:border-red/40 transition-colors">
+        <span className="text-sm text-ink/50">$</span>
         <input
           type="number"
           min={0}
           value={amount}
           onChange={(e) => setAmount(Math.max(0, Number(e.target.value) || 0))}
-          className="tabular w-full bg-transparent py-2 text-sm outline-none"
+          className="tabular w-full bg-transparent py-2 text-sm text-ink outline-none"
         />
       </label>
       <button
         onClick={withdraw}
         disabled={busy || amt <= 0 || amt > collateral}
-        className="h-11 rounded-xl border border-border bg-surface font-semibold text-foreground transition hover:bg-surface-2 active:scale-95 disabled:opacity-50"
+        className="w-full rounded-[12px] border-2 border-red py-3 font-display text-red transition hover:bg-red/[0.08] active:scale-[0.985] disabled:opacity-50"
       >
         {busy
           ? "Withdrawing…"
