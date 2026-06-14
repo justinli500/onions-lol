@@ -1,14 +1,10 @@
 import { createConfig } from "@privy-io/wagmi";
-import { baseSepolia } from "viem/chains";
 import { http } from "wagmi";
+import { CHAIN, RPC_URL } from "@/lib/chain";
 
-// Use @privy-io/wagmi's createConfig so wagmi's read/write hooks transparently
-// drive the Privy embedded wallet.
+// @privy-io/wagmi's createConfig so wagmi's read/write hooks drive the Privy
+// embedded wallet. Chain + RPC come from the single switch in lib/chain.
 export const wagmiConfig = createConfig({
-  chains: [baseSepolia],
-  transports: {
-    [baseSepolia.id]: http(
-      process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org",
-    ),
-  },
+  chains: [CHAIN],
+  transports: { [CHAIN.id]: http(RPC_URL) },
 });

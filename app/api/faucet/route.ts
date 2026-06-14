@@ -4,18 +4,18 @@
 // server creds are set — bound to the authenticated user's own wallet.
 import { createWalletClient, createPublicClient, http, parseEther, formatEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { baseSepolia } from "viem/chains";
+import { CHAIN, RPC_URL } from "@/lib/chain";
 
 export const runtime = "nodejs";
 
-const RPC = process.env.BASE_SEPOLIA_RPC_URL || "https://sepolia.base.org";
+const RPC = RPC_URL;
 const FAUCET_KEY = (process.env.FAUCET_PRIVATE_KEY || process.env.KEEPER_PRIVATE_KEY) as
   | `0x${string}`
   | undefined;
 const PRIVY_APP_ID = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 const PRIVY_APP_SECRET = process.env.PRIVY_APP_SECRET;
-const DRIP = parseEther(process.env.FAUCET_DRIP_ETH || "0.0015");
-const MIN = parseEther(process.env.FAUCET_MIN_ETH || "0.0005"); // skip if already funded
+const DRIP = parseEther(process.env.FAUCET_DRIP_ETH || "0.0003");
+const MIN = parseEther(process.env.FAUCET_MIN_ETH || "0.0001"); // skip if already funded
 
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS ?? "")
   .split(",").map((s) => s.trim()).filter(Boolean);
@@ -63,11 +63,11 @@ export async function POST(req: Request) {
   const auth = await authedOk(req, address);
   if (!auth.ok) return Response.json({ error: auth.error }, { status: auth.status });
 
-  const pub = createPublicClient({ chain: baseSepolia, transport: http(RPC) });
+  const pub = createPublicClient({ chain: CHAIN, transport: http(RPC) });
   const bal = await pub.getBalance({ address: address as `0x${string}` });
   if (bal >= MIN) return Response.json({ ok: true, skipped: true, balance: formatEther(bal) });
 
-  const wallet = createWalletClient({ account: privateKeyToAccount(FAUCET_KEY), chain: baseSepolia, transport: http(RPC) });
+  const wallet = createWalletClient({ account: privateKeyToAccount(FAUCET_KEY), chain: CHAIN, transport: http(RPC) });
   const hash = await wallet.sendTransaction({ to: address as `0x${string}`, value: DRIP });
   return Response.json({ ok: true, hash, dripped: formatEther(DRIP) }, { headers: { "Cache-Control": "no-store" } });
 }

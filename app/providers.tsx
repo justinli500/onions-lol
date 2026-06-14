@@ -3,7 +3,7 @@
 import { PrivyProvider } from "@privy-io/react-auth";
 import { WagmiProvider } from "@privy-io/wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { baseSepolia } from "viem/chains";
+import { CHAIN } from "@/lib/chain";
 import { Toaster } from "sonner";
 import { wagmiConfig } from "@/lib/wagmi";
 
@@ -29,8 +29,8 @@ export default function Providers({ children }: { children: React.ReactNode }) {
       config={{
         appearance: { theme: "dark", accentColor: "#a3e635", logo: undefined },
         loginMethods: ["email", "google", "wallet"],
-        defaultChain: baseSepolia,
-        supportedChains: [baseSepolia],
+        defaultChain: CHAIN,
+        supportedChains: [CHAIN],
         embeddedWallets: { ethereum: { createOnLogin: "users-without-wallets" } },
       }}
     >
